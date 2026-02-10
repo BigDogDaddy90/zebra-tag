@@ -30,18 +30,25 @@
         <button onclick="resetScores()" style="background:red; color:white; margin-top:40px; font-size: 0.7rem;">WIPE GLOBAL DATA</button>
     </div>
 
-    <input type="text" id="scanner" autofocus>
+    <input type="text" id="scanner">
 
     <script>
-        // 1. YOUR SUPABASE CONFIG (Paste your keys below)
+        // 1. YOUR SUPABASE CONFIG
         const SUPABASE_URL = 'https://awstxoaxwsrhcfimunca.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_aZH46m2lP5s6KFeXrZ1gdA_MFNQROnW';
         
-        // Initialize the client
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         let myName = localStorage.getItem('zebraUser') || "";
         let playerScores = {};
+        let gameStarted = false; // Prevents cursor stealing during login
+
+        // FIX: Listen for "Enter" key on the login screen
+        document.getElementById('username-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                joinGame();
+            }
+        });
 
         async function joinGame() {
             const val = document.getElementById('username-input').value.trim().toUpperCase();
@@ -55,22 +62,22 @@
         }
 
         async function bootGame() {
+            gameStarted = true; // Activate scanner focus
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('game-ui').style.display = 'block';
             document.getElementById('operator-display').innerText = "OPERATOR: " + myName;
 
-            // Update Status
             document.getElementById('status-text').innerText = "ONLINE";
             document.getElementById('status-text').style.color = "#0f0";
 
-            // A. Initial Data Fetch
-            const { data, error } = await _supabase.from('scores').select('*');
+            // Initial Data Fetch
+            const { data } = await _supabase.from('scores').select('*');
             if (data) {
                 data.forEach(row => playerScores[row.username] = row.score);
                 render();
             }
 
-            // B. Real-time Subscription (This makes the leaderboard move live!)
+            // Real-time Subscription
             _supabase.channel('custom-all-channel')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, payload => {
                     if (payload.new) {
@@ -78,32 +85,30 @@
                         render();
                     }
                     if (payload.eventType === 'DELETE') {
-                        // Refresh data if someone wipes the board
                         location.reload();
                     }
                 }).subscribe();
             
-            // C. Register our presence/Initial Score
+            // Register presence
             await _supabase.from('scores').upsert({ 
                 username: myName, 
                 score: playerScores[myName] || 0 
             });
             
-            document.getElementById('scanner').focus();
+            // Focus scanner only after game starts
+            setTimeout(() => document.getElementById('scanner').focus(), 500);
         }
 
         async function iScored() {
             let current = (playerScores[myName] || 0) + 1;
-            playerScores[myName] = current; // Optimistic update for speed
+            playerScores[myName] = current;
             render();
 
-            // Send hit to Supabase
-            const { error } = await _supabase.from('scores').upsert({ 
+            await _supabase.from('scores').upsert({ 
                 username: myName, 
                 score: current 
             });
 
-            // Feedback Flash
             document.body.style.background = "#030";
             setTimeout(() => document.body.style.background = "#000", 100);
         }
@@ -111,10 +116,7 @@
         function render() {
             const b = document.getElementById('board');
             b.innerHTML = '';
-            
-            // Sort by highest score
             const sorted = Object.keys(playerScores).sort((a,b) => playerScores[b] - playerScores[a]);
-            
             sorted.forEach(id => {
                 const isMe = id === myName ? "style='border: 2px solid #fff;'" : "";
                 b.innerHTML += `<div class="score-row" ${isMe}><span>${id}</span><span>${playerScores[id]}</span></div>`;
@@ -129,8 +131,9 @@
             }
         }
 
-        // Controls: Spacebar and Scanner Input
+        // Logic for Keys and Scanners
         document.addEventListener('keydown', (e) => { 
+            if(!gameStarted) return; // Don't steal focus if still at login screen
             if(e.code === "Space") {
                 e.preventDefault();
                 iScored(); 
@@ -145,14 +148,13 @@
             } 
         });
 
-        // Auto-focus helper
+        // Smart Auto-focus (only if game is active)
         setInterval(() => {
-            if(document.getElementById('game-ui').style.display === 'block') {
+            if(gameStarted) {
                 document.getElementById('scanner').focus();
             }
         }, 1000);
 
-        // Auto-boot if name exists
         if(myName) bootGame();
     </script>
 </body>
