@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ZEBRA LAN TAG</title>
+    <title>ZEBRA LAN TAG v6</title>
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/lib/webrtc.js"></script>
     <style>
         body { background: #000; color: #0f0; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 20px; }
         .leaderboard { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; }
@@ -10,50 +11,57 @@
         .flash { animation: flash-red 0.1s; }
         @keyframes flash-red { from { background: #500; } to { background: #000; } }
         
-        /* Status Light */
-        #status-container { position: fixed; top: 10px; right: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: #555; }
-        #status-light { width: 12px; height: 12px; border-radius: 50%; background: grey; box-shadow: 0 0 5px #333; }
+        #status-container { position: fixed; top: 10px; right: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: #555; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 5px; }
+        #status-light { width: 12px; height: 12px; border-radius: 50%; background: grey; box-shadow: 0 0 5px #333; transition: all 0.5s; }
 
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
         #username-input { background: #111; color: #0f0; border: 2px solid #0f0; padding: 15px; font-size: 1.5rem; text-align: center; outline: none; }
         button.join-btn { background: #0f0; color: #000; border: none; padding: 15px 30px; margin-top: 20px; font-weight: bold; font-size: 1.2rem; cursor: pointer; }
 
         #game-ui { margin-top: 30px; }
-        #reset-btn { background: #200; color: #f00; border: 1px solid #f00; padding: 10px; margin-top: 50px; cursor: pointer; font-size: 0.7rem; }
+        #reset-btn { background: #200; color: #f00; border: 1px solid #f00; padding: 10px; margin-top: 50px; cursor: pointer; font-size: 0.7rem; opacity: 0.3; }
+        #reset-btn:hover { opacity: 1; }
         #scanner { opacity: 0; position: absolute; z-index: -1; }
         .user-tag { color: #fff; font-size: 0.9rem; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        #logout-link { color: #555; font-size: 0.7rem; text-decoration: underline; cursor: pointer; margin-left: 10px; }
     </style>
 </head>
 <body>
 
     <div id="status-container">
-        <span id="status-text">CONNECTING</span>
+        <span id="status-text">INIT...</span>
         <div id="status-light"></div>
     </div>
 
     <div id="login-screen">
-        <h1>ZEBRA TAG</h1>
+        <h1>ZEBRA TAG ONLINE</h1>
         <p>ENTER OPERATOR NAME:</p>
         <input type="text" id="username-input" placeholder="NAME...">
         <button class="join-btn" onclick="joinGame()">JOIN LOBBY</button>
     </div>
 
     <div id="game-ui" style="display:none;">
-        <div class="user-tag">OPERATOR: <span id="current-user" style="color:#0f0"></span> <span id="logout-link" onclick="logout()">[LOGOUT]</span></div>
+        <div class="user-tag">OPERATOR: <span id="current-user" style="color:#0f0"></span></div>
         <div id="board" class="leaderboard"></div>
-        <button id="reset-btn" onmousedown="resetScores()">ADMIN: WIPE ALL DATA</button>
+        <button id="reset-btn" onmousedown="resetScores()">ADMIN: WIPE DATA</button>
     </div>
 
     <input type="text" id="scanner">
 
     <script>
+        // High-reliability peer list
         const peers = [
             'https://gun-manhattan.herokuapp.com/gun',
+            'https://gun-us-west.herokuapp.com/gun',
             'https://p2p.xyz/gun'
         ];
         
-        const gun = Gun(peers).get('zebra-warehouse-v5');
+        // Initialize Gun with WebRTC enabled for direct LAN-style sync
+        const gun = Gun({
+            peers: peers,
+            localStorage: true,
+            mesh: true
+        }).get('zebra-warehouse-v7');
+
         const scannerInput = document.getElementById('scanner');
         const board = document.getElementById('board');
         const statusLight = document.getElementById('status-light');
@@ -64,22 +72,25 @@
         let isResetting = false;
         let gameActive = false;
 
-        // Status Monitoring Logic
-        // Gun.js doesn't have a simple 'onConnect', so we check for peer activity
+        // Enhanced Status Monitor
         setInterval(() => {
-            const mesh = gun.back('opt.mesh'); 
-            const connected = Object.values(mesh).some(peer => peer.readyState === 1 || peer.status === 'active');
-            
-            if (connected) {
+            // Check if we have any active peer connections
+            const peers_list = gun.back('opt.peers');
+            let isConnected = false;
+            Object.keys(peers_list).forEach(id => {
+                if(peers_list[id].wire && peers_list[id].wire.readyState === 1) isConnected = true;
+            });
+
+            if (isConnected) {
                 statusLight.style.background = "#0f0";
-                statusLight.style.boxShadow = "0 0 10px #0f0";
+                statusLight.style.boxShadow = "0 0 15px #0f0";
                 statusText.innerText = "ONLINE";
             } else {
                 statusLight.style.background = "#f00";
-                statusLight.style.boxShadow = "0 0 10px #f00";
+                statusLight.style.boxShadow = "0 0 15px #f00";
                 statusText.innerText = "OFFLINE";
             }
-        }, 3000);
+        }, 2000);
 
         const savedName = localStorage.getItem('zebraUser');
         if (savedName) bootGame(savedName);
@@ -99,18 +110,16 @@
             document.getElementById('game-ui').style.display = 'block';
             document.getElementById('current-user').innerText = myName;
             
-            // Listen for our own updates
+            // Force a data write to "wake up" the network
+            gun.get(myName).put(playerScores[myName] || 0);
+
+            // Listen for our specific updates
             gun.get(myName).on((score) => {
                 playerScores[myName] = score || 0;
                 renderBoard();
             });
             
             scannerInput.focus();
-        }
-
-        function logout() {
-            localStorage.removeItem('zebraUser');
-            location.reload();
         }
 
         gun.map().on((score, id) => {
@@ -123,7 +132,7 @@
         function renderBoard() {
             board.innerHTML = '';
             Object.keys(playerScores)
-                .filter(id => playerScores[id] > 0) 
+                .filter(id => playerScores[id] > 0 || id === myName) 
                 .sort((a,b) => playerScores[b] - playerScores[a])
                 .forEach(id => {
                     const isMe = id === myName ? "style='border: 2px solid #fff; box-shadow: 0 0 10px #0f0;'" : "";
@@ -135,7 +144,6 @@
             if (isResetting || !gameActive) return;
             let current = playerScores[myName] || 0;
             gun.get(myName).put(current + 1);
-            
             document.body.classList.add('flash');
             setTimeout(() => document.body.classList.remove('flash'), 100);
         }
@@ -164,6 +172,7 @@
             }
         });
 
+        // Keep focus on the scanner
         setInterval(() => { 
             if(gameActive && !isResetting && document.activeElement !== scannerInput) {
                 scannerInput.focus();
