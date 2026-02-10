@@ -42,6 +42,21 @@ function toggleAutoScan() {
     }
 }
 
+// --- NEW FUNCTION: FORGOT PASSWORD ---
+async function forgotPassword() {
+    const email = document.getElementById('email-input').value.trim();
+    if (!email) {
+        alert("Please type your email in the box first!");
+        return;
+    }
+    try {
+        await firebase.auth().sendPasswordResetEmail(email);
+        alert("Reset link sent! Check your inbox.");
+    } catch (e) {
+        alert(e.message);
+    }
+}
+
 async function handleAuth() {
     const email = document.getElementById('email-input').value.trim();
     const pass = document.getElementById('pass-input').value;
@@ -59,7 +74,14 @@ async function handleAuth() {
 
 function toggleAuth() {
     const f = document.getElementById('reg-fields');
-    f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    const title = document.getElementById('auth-title');
+    if (f.style.display === 'none') {
+        f.style.display = 'block';
+        title.innerText = "CREATE ACCOUNT";
+    } else {
+        f.style.display = 'none';
+        title.innerText = "ZEBRA TAG LOGIN";
+    }
 }
 
 function joinStore() {
