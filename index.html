@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ZEBRA TAG v12 - FINAL FIX</title>
+    <title>ZEBRA TAG v13 - THE RELOAD</title>
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <style>
         body { background: #000; color: #0f0; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 20px; }
@@ -11,34 +11,51 @@
         #login-screen { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
         #username-input { background: #111; color: #0f0; border: 2px solid #0f0; padding: 15px; font-size: 1.5rem; text-align: center; }
         #scanner { position: absolute; left: -9999px; opacity: 0; }
+        .admin-btn { background: #200; color: #f00; border: 1px solid #f00; padding: 10px; margin-top: 40px; cursor: pointer; font-size: 0.8rem; }
+        #debug-log { font-size: 0.6rem; color: #444; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="status-container"><span id="status-text">CONNECTING</span><div id="status-light"></div></div>
+    <div id="status-container"><span id="status-text">INIT...</span><div id="status-light"></div></div>
 
     <div id="login-screen">
-        <h1>ZEBRA TAG</h1>
-        <input type="text" id="username-input" placeholder="NAME...">
-        <button onclick="joinGame()" style="background:#0f0; padding:15px; margin-top:20px; font-weight:bold;">START</button>
+        <h1>ZEBRA TAG ONLINE</h1>
+        <input type="text" id="username-input" placeholder="OPERATOR NAME...">
+        <button onclick="joinGame()" style="background:#0f0; padding:15px 40px; margin-top:20px; font-weight:bold; cursor:pointer;">START</button>
     </div>
 
     <div id="game-ui" style="display:none;">
+        <div id="operator-tag" style="color:white; margin-bottom:20px;"></div>
         <div id="board"></div>
-        <input type="text" id="scanner">
+        
+        <button class="admin-btn" onclick="resetScores()">WIPE ALL SCORES</button>
+        
+        <div id="debug-log">Log: System starting...</div>
     </div>
 
+    <input type="text" id="scanner">
+
     <script>
-        // Use multiple peers so if Manhattan is down, it uses another
-        const gun = Gun(['https://gun-manhattan.herokuapp.com/gun', 'https://p2p.xyz/gun']);
-        const lobby = gun.get('zebra_production_v12');
+        // Swapping to more reliable peer
+        const gun = Gun({
+            peers: ['https://p2p.xyz/gun', 'https://gun-manhattan.herokuapp.com/gun'],
+            localStorage: true
+        });
+        const lobby = gun.get('zebra_v13_stable');
+        
         let myName = localStorage.getItem('zebraUser') || "";
         let playerScores = {};
 
-        // Status Monitor (Runs every 2 seconds)
+        function log(msg) { document.getElementById('debug-log').innerText = "Log: " + msg; }
+
+        // Status Monitor
         setInterval(() => {
             const peers = gun.back('opt.peers');
-            let connected = Object.values(peers).some(p => p.wire && p.wire.readyState === 1);
+            let connected = false;
+            Object.keys(peers).forEach(id => {
+                if(peers[id].wire && peers[id].wire.readyState === 1) connected = true;
+            });
             document.getElementById('status-light').style.background = connected ? "#0f0" : "#f00";
             document.getElementById('status-text').innerText = connected ? "ONLINE" : "OFFLINE";
         }, 2000);
@@ -47,9 +64,11 @@
 
         function joinGame() {
             const val = document.getElementById('username-input').value.trim().toUpperCase();
-            if (val && val.length > 0) { // Fixes "0 length key" error
+            if (val.length > 0) {
                 localStorage.setItem('zebraUser', val);
                 bootGame(val);
+            } else {
+                alert("Please enter a name!");
             }
         }
 
@@ -57,34 +76,72 @@
             myName = name;
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('game-ui').style.display = 'block';
-            
+            document.getElementById('operator-tag').innerText = "OPERATOR: " + myName;
+            log("Booted as " + myName);
+
+            // Listen for data
             lobby.map().on((score, id) => {
-                if (id && id !== 'undefined') {
+                if (id && id !== 'undefined' && id !== 'null') {
                     playerScores[id] = score;
-                    render();
+                    renderBoard();
                 }
             });
-            // Send a ping so the network sees us
+
+            // Initial ping
             lobby.get(myName).put(playerScores[myName] || 0);
+            document.getElementById('scanner').focus();
         }
 
-        function render() {
-            const b = document.getElementById('board');
-            b.innerHTML = `<div style="color:white;margin-bottom:20px;">OPERATOR: ${myName}</div>`;
-            Object.keys(playerScores).sort((a,b)=>playerScores[b]-playerScores[a]).forEach(id => {
-                b.innerHTML += `<div class="score-row"><span>${id}</span><span>${playerScores[id]}</span></div>`;
+        function renderBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            const sorted = Object.keys(playerScores).sort((a,b) => playerScores[b] - playerScores[a]);
+            
+            sorted.forEach(id => {
+                if(playerScores[id] > 0 || id === myName) {
+                    const isMe = id === myName ? "style='border: 2px solid #fff;'" : "";
+                    board.innerHTML += `<div class="score-row" ${isMe}><span>${id}</span><span>${playerScores[id]}</span></div>`;
+                }
             });
         }
 
-        function score() {
-            let current = playerScores[myName] || 0;
+        function iScored() {
+            let current = (playerScores[myName] || 0);
             lobby.get(myName).put(current + 1);
+            log("Scored! Total: " + (current + 1));
+            document.body.style.background = "#030";
+            setTimeout(() => document.body.style.background = "#000", 100);
         }
 
-        // Spacebar and Scanner
-        document.addEventListener('keydown', (e) => { if(e.code === "Space") score(); document.getElementById('scanner').focus(); });
-        document.getElementById('scanner').onchange = (e) => { if(e.target.value) { score(); e.target.value=''; } };
-        setInterval(() => document.getElementById('scanner').focus(), 1000);
+        function resetScores() {
+            if(confirm("Wipe all data for everyone?")) {
+                Object.keys(playerScores).forEach(id => {
+                    lobby.get(id).put(0);
+                });
+                playerScores = {};
+                renderBoard();
+                log("Data wiped.");
+            }
+        }
+
+        // Spacebar + Scanner
+        document.addEventListener('keydown', (e) => {
+            if(e.code === "Space") { e.preventDefault(); iScored(); }
+            document.getElementById('scanner').focus();
+        });
+
+        document.getElementById('scanner').addEventListener('change', (e) => {
+            if(e.target.value.trim()) {
+                iScored();
+                e.target.value = '';
+            }
+        });
+
+        setInterval(() => {
+            if(document.getElementById('game-ui').style.display === 'block') {
+                document.getElementById('scanner').focus();
+            }
+        }, 1000);
     </script>
 </body>
 </html>
