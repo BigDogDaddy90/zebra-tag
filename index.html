@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZEBRA TAG - V0.2</title>
+    <title>ZEBRA TAG - V0.3</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -62,7 +62,7 @@
         <div id="op-name" style="letter-spacing:2px; font-weight:bold">LOADING...</div>
         <div style="color:var(--gray); font-size:0.7rem; margin-top:20px;">TOTAL SCANS</div>
         <h1 id="my-count" onclick="iScored()">0</h1>
-        <div onclick="resetMyScore()" style="color:#333; font-size:0.7rem; cursor:pointer; margin-top:10px;">RESET PERSONAL</div>
+        
 
         <div id="leaderboard-wrap">
             <div id="leaderboard-content"></div>
@@ -204,8 +204,8 @@
             openModal("ERASE ENTIRE BOARD?", () => { db.ref('global_scores').remove(); });
         }
 
-        function resetMyScore() {
-            openModal("Reset your personal score?", () => { db.ref(`global_scores/${auth.currentUser.uid}`).remove(); });
+        //function resetMyScore() {
+           // openModal("Reset your personal score?", () => { db.ref(`global_scores/${auth.currentUser.uid}`).remove(); });
         }
 
         function handleSignOut() { auth.signOut().then(() => location.reload()); }
@@ -231,3 +231,4 @@
     </script>
 </body>
 </html>
+            
