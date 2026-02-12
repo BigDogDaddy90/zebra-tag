@@ -3,89 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZEBRA TAG - V 0.001</title>
+    <title>ZEBRA TAG - V0.0.1</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
         :root { --neon: #0f0; --dark: #070707; --panel: #121212; --red: #f44; --gray: #555; }
-        body { background: var(--dark); color: var(--neon); font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .top-nav { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 20px; box-sizing: border-box; position: absolute; top: 0; }
-        .status-pill { display: flex; align-items: center; gap: 6px; font-size: 0.65rem; color: var(--neon); letter-spacing: 1px; }
-        .dot { width: 8px; height: 8px; background: var(--neon); border-radius: 50%; box-shadow: 0 0 10px var(--neon); animation: blink 2s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        .flash { animation: flash-white 0.2s ease-out !important; }
-        @keyframes flash-white { 0% { background: #fff; box-shadow: 0 0 20px #fff; } 100% { background: var(--neon); } }
+        body { background: var(--dark); color: var(--neon); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        
+        /* UI Components */
         .screen { display: none; position: fixed; inset: 0; background: var(--dark); flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
         .active { display: flex; }
-        .box { width: 85%; max-width: 380px; padding: 40px 20px; border: 1px solid var(--neon); background: #000; border-radius: 8px; }
-        input { background: #000; color: var(--neon); border: 1px solid #333; padding: 16px; font-size: 1rem; text-align: center; width: 100%; margin-bottom: 15px; box-sizing: border-box; outline: none; border-radius: 6px; }
-        .btn { padding: 20px; background: var(--neon); color: #000; border: none; font-weight: 900; width: 100%; cursor: pointer; text-transform: uppercase; border-radius: 6px; letter-spacing: 1px; }
-        #game-screen { display: none; width: 100%; max-width: 500px; padding-top: 15vh; flex-direction: column; align-items: center; }
-        #hero-zone { text-align: center; width: 100%; margin-bottom: 60px; }
-        .score-label { font-size: 0.75rem; letter-spacing: 5px; color: var(--gray); text-transform: uppercase; margin-bottom: 5px; }
-        #my-count { font-size: 8rem; font-weight: 900; margin: 10px 0; cursor: pointer; color: #fff; text-shadow: 0 0 25px rgba(0,255,0,0.3); line-height: 0.9; }
-        #op-name { color: var(--neon); font-size: 1.1rem; font-weight: bold; letter-spacing: 2px; }
-        #leaderboard-wrap { width: 90%; margin: 0 auto; text-align: left; padding-bottom: 100px; }
-        .section-header { text-align: center; border-bottom: 1px solid #222; padding-bottom: 12px; margin-bottom: 20px; }
-        .section-title { font-size: 0.8rem; color: var(--gray); letter-spacing: 2px; }
-        .row { background: var(--panel); padding: 18px; display: flex; justify-content: space-between; margin-bottom: 12px; border-radius: 10px; font-size: 1.1rem; align-items: center; border: 1px solid transparent; }
+        .box { width: 85%; max-width: 380px; padding: 30px 20px; border: 1px solid var(--neon); background: #000; border-radius: 8px; text-align: center; }
+        
+        /* Inputs & Buttons */
+        input { background: #000; color: var(--neon); border: 1px solid #333; padding: 15px; font-size: 1rem; text-align: center; width: 100%; margin-bottom: 10px; box-sizing: border-box; outline: none; border-radius: 6px; }
+        .btn { padding: 18px; background: var(--neon); color: #000; border: none; font-weight: 900; width: 100%; cursor: pointer; text-transform: uppercase; border-radius: 6px; }
+        .btn-wipe { background: #200; color: var(--red); border: 1px solid #400; margin-top: 30px; display: none; }
+        
+        /* Game Elements */
+        #game-screen { display: none; width: 100%; max-width: 500px; padding-top: 80px; flex-direction: column; align-items: center; }
+        .top-nav { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; position: fixed; top: 0; background: rgba(0,0,0,0.8); z-index: 1001; }
+        #my-count { font-size: 8rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(0,255,0,0.4); margin: 0; cursor: pointer; }
+        
+        /* Leaderboard */
+        #leaderboard-wrap { width: 90%; margin-top: 30px; padding-bottom: 50px; }
+        .row { background: var(--panel); padding: 15px; display: flex; justify-content: space-between; margin-bottom: 8px; border-radius: 8px; border: 1px solid transparent; }
         .me-highlight { border: 1px solid var(--neon); background: #1a1a1a; }
-        .score-val { font-weight: bold; color: var(--neon); font-family: 'Courier New', monospace; }
-        .reset-link { font-size: 0.7rem; color: #222; cursor: pointer; margin-top: 20px; display: inline-block; text-transform: uppercase; }
-        #admin-wipe { background: #100; color: var(--red); border: 1px solid #300; margin-top: 40px; display: none; }
-        #scanner { position: fixed; top: -100px; opacity: 0; }
+        
+        /* Status Animations */
+        .dot { width: 8px; height: 8px; background: #555; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .connected .dot { background: var(--neon); box-shadow: 0 0 10px var(--neon); animation: blink 2s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        #scanner { position: absolute; left: -9999px; opacity: 0; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen" class="screen active">
         <div class="box">
-            <h2 id="auth-title">ZEBRA TAG LOGIN</h2>
-            <div id="reg-fields" style="display:none">
-                <input type="text" id="username-input" placeholder="YOUR NAME">
-            </div>
+            <h2 id="auth-title">SYSTEM ACCESS</h2>
+            <div id="reg-fields" style="display:none"><input type="text" id="username-input" placeholder="DISPLAY NAME"></div>
             <input type="email" id="email-input" placeholder="EMAIL">
             <input type="password" id="pass-input" placeholder="PASSWORD">
-            <button class="btn" onclick="handleAuth()">ENTER</button>
-            <div onclick="toggleAuth()" style="cursor:pointer; font-size:0.75rem; color: var(--gray); margin-top:20px;">NEED ACCOUNT? <span style="color:var(--neon)">REGISTER</span></div>
+            <button class="btn" onclick="handleAuth()">LOGIN</button>
+            <p onclick="toggleAuth()" style="font-size:0.8rem; margin-top:15px; cursor:pointer; color:var(--gray)">SWITCH TO <span style="color:var(--neon)">REGISTER</span></p>
         </div>
     </div>
 
     <div id="lobby-screen" class="screen">
         <div class="box">
-            <h2>LOBBY </h2>
-            <input type="text" id="store-input" placeholder="ROOM ID">
-            <button class="btn" onclick="joinStore()">JOIN ROOM </button>
-            <div onclick="handleSignOut()" style="cursor:pointer; font-size:0.75rem; color: var(--red); margin-top: 25px;">LOGOUT</div>
+            <h2>SELECT ROOM</h2>
+            <input type="text" id="store-input" placeholder="ROOM ID (e.g. TEST)">
+            <button class="btn" onclick="joinStore()">ENTER ROOM</button>
+            <p onclick="handleSignOut()" style="color:var(--red); cursor:pointer; margin-top:20px; font-size:0.8rem;">LOGOUT</p>
         </div>
     </div>
 
     <div id="game-screen">
         <div class="top-nav">
-            <span id="store-display" style="font-size: 0.7rem; color: var(--gray);">ST: ---</span>
-            <div class="status-pill"><div class="dot" id="status-dot"></div> CONNECTED</div>
-            <span onclick="exitRoom()" style="color:var(--red); cursor:pointer; font-size: 0.7rem; font-weight: bold;">EXIT</span>
+            <span id="store-display" onclick="triggerSecretAdmin()" style="color:var(--gray); cursor:pointer;">ST: --</span>
+            <div id="conn-status" class="status-pill"><div class="dot"></div> <span id="conn-text">OFFLINE</span></div>
+            <span onclick="exitRoom()" style="color:var(--red); cursor:pointer; font-weight:bold">EXIT</span>
         </div>
-        <div id="hero-zone">
-            <div id="op-name">---</div>
-            <div style="height: 40px;"></div>
-            <div class="score-label">SCORE : </div>
-            <div id="my-count" onclick="iScored()">0</div>
-            <div class="reset-link" onclick="resetMyScore()">Reset My Count</div>
-        </div>
+
+        <div id="op-name" style="letter-spacing:2px; font-weight:bold">OPERATOR</div>
+        <div style="color:var(--gray); font-size:0.7rem; margin-top:20px;">TOTAL SCANS</div>
+        <h1 id="my-count" onclick="iScored()">0</h1>
+        <div onclick="resetMyScore()" style="color:#333; font-size:0.7rem; cursor:pointer">RESET PERSONAL</div>
+
         <div id="leaderboard-wrap">
-            <div class="section-header">
-                <span class="section-title"> RANKINGS</span>
-            </div>
+            <div style="text-align:center; color:var(--gray); font-size:0.7rem; border-bottom:1px solid #222; padding-bottom:10px; margin-bottom:15px;">LEADERBOARD</div>
             <div id="leaderboard-content"></div>
-            <button id="admin-wipe" class="btn" onclick="wipeStoreData()">WIPE DATA</button>
+            <button id="admin-wipe" class="btn btn-wipe" onclick="wipeStoreData()">WIPE ROOM DATA</button>
         </div>
     </div>
 
-    <input type="text" id="scanner">
+    <input type="text" id="scanner" autofocus>
 
     <script>
+        // 1. CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyDFIuHkzGlTNn20-2hVyQUwaKXyqZ9kPRc",
             projectId: "zebratagpro",
@@ -93,24 +90,32 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const ADMIN_UID = "VhP6eNFlJBRmtpwyDCVp2GLIs9g2";
+        const auth = firebase.auth();
         
+        // Authorized Admins
+        const ADMIN_LIST = [
+            "VhP6eNFlJBRmtpwyDCVp2GLIs9g2",
+            "ssrP3E1JuvgvREJSP2mDEcggkeW2"
+        ];
+
         let currentStoreID = "";
         let myName = "";
+        let adminClicks = 0;
 
-        function triggerFlash() {
-            const dot = document.getElementById('status-dot');
-            dot.classList.remove('flash');
-            void dot.offsetWidth;
-            dot.classList.add('flash');
-        }
+        // 2. CONNECTION MONITOR
+        db.ref(".info/connected").on("value", (snap) => {
+            const statusBox = document.getElementById('conn-status');
+            const statusText = document.getElementById('conn-text');
+            if (snap.val() === true) {
+                statusBox.classList.add('connected');
+                statusText.innerText = "CONNECTED";
+            } else {
+                statusBox.classList.remove('connected');
+                statusText.innerText = "OFFLINE";
+            }
+        });
 
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('game-screen').style.display = (id === 'game-screen' ? 'flex' : 'none');
-            if(id !== 'game-screen') document.getElementById(id).classList.add('active');
-        }
-
+        // 3. AUTHENTICATION
         async function handleAuth() {
             const email = document.getElementById('email-input').value.trim();
             const pass = document.getElementById('pass-input').value;
@@ -118,10 +123,10 @@
             try {
                 if(isReg) {
                     const user = document.getElementById('username-input').value.trim();
-                    const res = await firebase.auth().createUserWithEmailAndPassword(email, pass);
+                    const res = await auth.createUserWithEmailAndPassword(email, pass);
                     await db.ref('users/' + res.user.uid).set({ name: user.toUpperCase() || "OPERATOR" });
                 } else {
-                    await firebase.auth().signInWithEmailAndPassword(email, pass);
+                    await auth.signInWithEmailAndPassword(email, pass);
                 }
             } catch(e) { alert(e.message); }
         }
@@ -129,88 +134,119 @@
         function toggleAuth() {
             const f = document.getElementById('reg-fields');
             f.style.display = f.style.display === 'none' ? 'block' : 'none';
-            document.getElementById('auth-title').innerText = f.style.display === 'none' ? "SYSTEM LOGIN" : "CREATE ACCOUNT";
+            document.getElementById('auth-title').innerText = f.style.display === 'none' ? "SYSTEM ACCESS" : "CREATE ACCOUNT";
+        }
+
+        // 4. NAVIGATION
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('game-screen').style.display = (id === 'game-screen' ? 'flex' : 'none');
+            if(id !== 'game-screen') document.getElementById(id).classList.add('active');
         }
 
         function joinStore() {
-            const store = document.getElementById('store-input').value.trim().toUpperCase();
-            if(!store) return alert("Enter Store ID");
-            currentStoreID = store;
-            localStorage.setItem('zebra_last_store', store);
+            const val = document.getElementById('store-input').value.trim().toUpperCase();
+            if(!val) return alert("Enter Room ID");
+            currentStoreID = val;
+            localStorage.setItem('zebra_last_store', val);
             startApp();
         }
 
         function startApp() {
             showScreen('game-screen');
             document.getElementById('store-display').innerText = "ST: " + currentStoreID;
-            const user = firebase.auth().currentUser;
-            if(user.uid === ADMIN_UID) document.getElementById('admin-wipe').style.display = 'block';
+            
+            // Hide admin button on start
+            document.getElementById('admin-wipe').style.display = 'none';
+            adminClicks = 0;
 
+            const user = auth.currentUser;
             db.ref(`stores/${currentStoreID}/scores/${user.uid}`).update({ name: myName });
 
             db.ref(`stores/${currentStoreID}/scores`).on('value', s => {
                 const data = s.val() || {};
-                document.getElementById('my-count').innerText = data[user.uid] ? (data[user.uid].score || 0) : 0;
                 const board = document.getElementById('leaderboard-content');
+                document.getElementById('my-count').innerText = data[user.uid]?.score || 0;
+                
                 board.innerHTML = '';
                 Object.keys(data).sort((a,b) => (data[b].score || 0) - (data[a].score || 0)).forEach((id, i) => {
-                    const style = id === user.uid ? 'me-highlight' : '';
-                    board.innerHTML += `<div class="row ${style}"><span>#${i+1} ${data[id].name || "OP"}</span><span class="score-val">${data[id].score || 0}</span></div>`;
+                    const isMe = id === user.uid ? 'me-highlight' : '';
+                    board.innerHTML += `<div class="row ${isMe}"><span>#${i+1} ${data[id].name}</span><strong>${data[id].score || 0}</strong></div>`;
                 });
             });
         }
 
-        function iScored() {
-            const user = firebase.auth().currentUser;
-            if(!currentStoreID || !user) return;
-            triggerFlash();
-            db.ref(`stores/${currentStoreID}/scores/${user.uid}`).transaction(data => {
-                if (!data) return { name: myName, score: 1 };
-                data.score = (data.score || 0) + 1;
-                data.name = myName;
-                return data;
-            });
+        // 5. SECRET ADMIN TRIGGER
+        function triggerSecretAdmin() {
+            const user = auth.currentUser;
+            adminClicks++;
+            
+            if (adminClicks >= 5) {
+                if (user && ADMIN_LIST.includes(user.uid)) {
+                    document.getElementById('admin-wipe').style.display = 'block';
+                    alert("ADMIN UNLOCKED");
+                } else {
+                    alert("UNAUTHORIZED ACCESS");
+                }
+                adminClicks = 0;
+            }
         }
 
-        function resetMyScore() { 
-            if(confirm("Reset scans?")) {
-                db.ref(`stores/${currentStoreID}/scores/${firebase.auth().currentUser.uid}`).update({
-                    score: 0,
-                    name: myName
+        // 6. GAME ACTIONS
+        function iScored() {
+            if(!currentStoreID) return;
+            db.ref(`stores/${currentStoreID}/scores/${auth.currentUser.uid}/score`).transaction(c => (c || 0) + 1);
+        }
+
+        function resetMyScore() {
+            if(confirm("Reset your count?")) {
+                db.ref(`stores/${currentStoreID}/scores/${auth.currentUser.uid}`).update({ score: 0 });
+            }
+        }
+
+        function wipeStoreData() {
+            if(!currentStoreID) return;
+
+            if(confirm("DANGER: This will clear the entire leaderboard for " + currentStoreID + ". Proceed?")) {
+                db.ref(`stores/${currentStoreID}/scores`).set(null, (err) => {
+                    if(err) {
+                        alert("Wipe failed: " + err.message);
+                    } else {
+                        // Restore admin entry so screen isn't blank
+                        db.ref(`stores/${currentStoreID}/scores/${auth.currentUser.uid}`).set({
+                            name: myName,
+                            score: 0
+                        });
+                        alert("Room data cleared.");
+                    }
                 });
             }
+        }
+
+        // 7. SYSTEM HANDLERS
+        function exitRoom() { 
+            db.ref(`stores/${currentStoreID}/scores`).off();
+            showScreen('lobby-screen'); 
         }
         
-        function wipeStoreData() { 
-            if(confirm("WIPE ALL STORE DATA? This cannot be undone.")) {
-                db.ref(`stores/${currentStoreID}/scores`).set(null) 
-                .then(() => {
-                    const user = firebase.auth().currentUser;
-                    return db.ref(`stores/${currentStoreID}/scores/${user.uid}`).set({ name: myName, score: 0 });
-                })
-                .then(() => alert("Store data wiped."))
-                .catch(e => alert("Error: " + e.message));
-            }
-        }
+        function handleSignOut() { auth.signOut().then(() => location.reload()); }
 
-        function exitRoom() { db.ref(`stores/${currentStoreID}/scores`).off(); showScreen('lobby-screen'); }
-        function handleSignOut() { firebase.auth().signOut().then(() => location.reload()); }
-
-        firebase.auth().onAuthStateChanged(async user => {
+        auth.onAuthStateChanged(async user => {
             if(user) {
-                try {
-                    const snap = await db.ref('users/' + user.uid).get();
-                    myName = snap.val()?.name || user.email.split('@')[0].toUpperCase();
-                    document.getElementById('op-name').innerText = myName;
-                    document.getElementById('store-input').value = localStorage.getItem('zebra_last_store') || "";
-                    showScreen('lobby-screen');
-                } catch(e) { console.error(e); }
-            } else { showScreen('auth-screen'); }
+                const snap = await db.ref('users/' + user.uid).get();
+                myName = snap.val()?.name || user.email.split('@')[0].toUpperCase();
+                document.getElementById('op-name').innerText = myName;
+                document.getElementById('store-input').value = localStorage.getItem('zebra_last_store') || "";
+                showScreen('lobby-screen');
+            } else {
+                showScreen('auth-screen');
+            }
         });
 
         setInterval(() => {
-            if (document.getElementById('game-screen').style.display === 'flex' && document.activeElement.tagName !== 'INPUT') {
-                document.getElementById('scanner').focus();
+            if(document.getElementById('game-screen').style.display === 'flex') {
+                const sc = document.getElementById('scanner');
+                if(document.activeElement !== sc) sc.focus();
             }
         }, 1000);
 
