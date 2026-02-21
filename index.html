@@ -25,403 +25,428 @@
             --display: 'Barlow Condensed', sans-serif;
         }
 
-    /* ── RESET ── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-        background: var(--bg);
-        color: var(--text);
-        font-family: var(--mono);
-        min-height: 100vh;
-        overflow-x: hidden;
-    }
+```
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
 
-    /* ── SCANLINES OVERLAY ── */
-    body::after {
-        content: '';
-        position: fixed;
-        inset: 0;
-        background: repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 2px,
-            rgba(0,0,0,0.07) 2px,
-            rgba(0,0,0,0.07) 4px
-        );
-        pointer-events: none;
-        z-index: 9999;
-    }
+/* ── SCANLINES OVERLAY ── */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.07) 2px,
+        rgba(0,0,0,0.07) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+}
 
-    /* ── SCREENS ── */
-    .screen {
-        display: none;
-        position: fixed;
-        inset: 0;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 100;
-        background: var(--bg);
-    }
-    .screen.active { display: flex; }
+/* ── SCREENS ── */
+.screen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    background: var(--bg);
+}
+.screen.active { display: flex; }
 
-    /* ── AUTH ── */
-    .auth-card {
-        width: 88%;
-        max-width: 360px;
-        border: 1px solid var(--green-dim);
-        background: var(--surface);
-        padding: 36px 28px;
-        position: relative;
-    }
-    .auth-card::before {
-        content: '';
-        position: absolute;
-        top: -1px; left: -1px; right: -1px;
-        height: 3px;
-        background: var(--green);
-    }
-    .auth-title {
-        font-family: var(--display);
-        font-size: 2rem;
-        font-weight: 900;
-        letter-spacing: 6px;
-        color: var(--green);
-        text-align: center;
-        margin-bottom: 6px;
-    }
-    .auth-sub {
-        font-size: 0.65rem;
-        color: var(--gray);
-        text-align: center;
-        letter-spacing: 3px;
-        margin-bottom: 28px;
-    }
-    .field {
-        width: 100%;
-        background: #000;
-        border: 1px solid var(--border);
-        border-left: 3px solid var(--green-dim);
-        color: var(--green);
-        font-family: var(--mono);
-        font-size: 0.85rem;
-        padding: 14px 16px;
-        margin-bottom: 10px;
-        outline: none;
-        transition: border-color 0.2s;
-        letter-spacing: 1px;
-    }
-    .field:focus { border-color: var(--green); }
-    .field::placeholder { color: #333; }
-    .btn {
-        width: 100%;
-        padding: 16px;
-        font-family: var(--display);
-        font-size: 1rem;
-        font-weight: 900;
-        letter-spacing: 4px;
-        text-transform: uppercase;
-        border: none;
-        cursor: pointer;
-        transition: all 0.15s;
-    }
-    .btn-primary {
-        background: var(--green);
-        color: #000;
-    }
-    .btn-primary:active { opacity: 0.8; transform: scale(0.99); }
-    .btn-ghost {
-        background: transparent;
-        color: var(--gray);
-        border: 1px solid var(--border);
-        margin-top: 8px;
-        font-size: 0.75rem;
-    }
-    .btn-danger {
-        background: transparent;
-        color: var(--red);
-        border: 1px solid #2a0000;
-        margin-top: 32px;
-        font-size: 0.75rem;
-        display: none;
-    }
-    .auth-link {
-        font-size: 0.7rem;
-        color: var(--gray);
-        text-align: center;
-        margin-top: 18px;
-        cursor: pointer;
-        letter-spacing: 2px;
-    }
-    .auth-link span { color: var(--green); }
-    .auth-link-sm {
-        font-size: 0.65rem;
-        color: #2a2a2a;
-        text-align: center;
-        margin-top: 10px;
-        cursor: pointer;
-        letter-spacing: 1px;
-        text-decoration: underline;
-    }
+/* ── AUTH ── */
+.auth-card {
+    width: 88%;
+    max-width: 360px;
+    border: 1px solid var(--green-dim);
+    background: var(--surface);
+    padding: 36px 28px;
+    position: relative;
+}
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px; right: -1px;
+    height: 3px;
+    background: var(--green);
+}
+.auth-title {
+    font-family: var(--display);
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 6px;
+    color: var(--green);
+    text-align: center;
+    margin-bottom: 6px;
+}
+.auth-sub {
+    font-size: 0.65rem;
+    color: var(--gray);
+    text-align: center;
+    letter-spacing: 3px;
+    margin-bottom: 28px;
+}
+.field {
+    width: 100%;
+    background: #000;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green-dim);
+    color: var(--green);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 1px;
+}
+.field:focus { border-color: var(--green); }
+.field::placeholder { color: #333; }
+.btn {
+    width: 100%;
+    padding: 16px;
+    font-family: var(--display);
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.btn-primary {
+    background: var(--green);
+    color: #000;
+}
+.btn-primary:active { opacity: 0.8; transform: scale(0.99); }
+.btn-ghost {
+    background: transparent;
+    color: var(--gray);
+    border: 1px solid var(--border);
+    margin-top: 8px;
+    font-size: 0.75rem;
+}
+.btn-danger {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid #2a0000;
+    margin-top: 32px;
+    font-size: 0.75rem;
+    display: none;
+}
+.auth-link {
+    font-size: 0.7rem;
+    color: var(--gray);
+    text-align: center;
+    margin-top: 18px;
+    cursor: pointer;
+    letter-spacing: 2px;
+}
+.auth-link span { color: var(--green); }
+.auth-link-sm {
+    font-size: 0.65rem;
+    color: #2a2a2a;
+    text-align: center;
+    margin-top: 10px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-decoration: underline;
+}
 
-    /* ── GAME SCREEN ── */
-    #game-screen {
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        max-width: 500px;
-        margin: 0 auto;
-        padding-top: 72px;
-        padding-bottom: 40px;
-    }
+/* ── GAME SCREEN ── */
+#game-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-top: 72px;
+    padding-bottom: 40px;
+}
 
-    /* ── TOP BAR ── */
-    .topbar {
-        position: fixed;
-        top: 0;
-        left: 0; right: 0;
-        height: 56px;
-        background: var(--surface);
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 20px;
-        z-index: 200;
-    }
-    .topbar-brand {
-        font-family: var(--display);
-        font-weight: 900;
-        font-size: 1.1rem;
-        letter-spacing: 5px;
-        color: var(--green);
-    }
-    .topbar-right { display: flex; align-items: center; gap: 16px; }
-    .conn-pill {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.6rem;
-        letter-spacing: 2px;
-        color: var(--gray);
-    }
-    .conn-dot {
-        width: 7px; height: 7px;
-        border-radius: 50%;
-        background: var(--gray);
-        transition: background 0.3s;
-    }
-    .conn-pill.online .conn-dot {
-        background: var(--green);
-        box-shadow: 0 0 8px var(--green);
-        animation: pulse 2s infinite;
-    }
-    .conn-pill.online { color: var(--green-dim); }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-    .logout-btn {
-        font-family: var(--mono);
-        font-size: 0.65rem;
-        letter-spacing: 2px;
-        color: var(--red);
-        cursor: pointer;
-        background: none;
-        border: none;
-        padding: 0;
-    }
+/* ── TOP BAR ── */
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0; right: 0;
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 200;
+}
+.topbar-brand {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 5px;
+    color: var(--green);
+}
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.conn-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--gray);
+}
+.conn-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--gray);
+    transition: background 0.3s;
+}
+.conn-pill.online .conn-dot {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+}
+.conn-pill.online { color: var(--green-dim); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.logout-btn {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    color: var(--red);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
 
-    /* ── PLAYER HERO ── */
-    .player-section {
-        width: 100%;
-        padding: 28px 24px 20px;
-        border-bottom: 1px solid var(--border);
-    }
-    .player-label {
-        font-size: 0.6rem;
-        letter-spacing: 3px;
-        color: var(--gray);
-        margin-bottom: 4px;
-    }
-    .player-name-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .player-name {
-        font-family: var(--display);
-        font-size: 1.6rem;
-        font-weight: 900;
-        letter-spacing: 3px;
-        color: var(--text);
-    }
-    .edit-btn {
-        color: var(--gray);
-        font-size: 0.8rem;
-        cursor: pointer;
-        background: none;
-        border: none;
-        padding: 0;
-        transition: color 0.2s;
-    }
-    .edit-btn:hover { color: var(--green); }
+/* ── PLAYER HERO ── */
+.player-section {
+    width: 100%;
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+}
+.player-label {
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    color: var(--gray);
+    margin-bottom: 4px;
+}
+.player-name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.player-name {
+    font-family: var(--display);
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: var(--text);
+}
+.edit-btn {
+    color: var(--gray);
+    font-size: 0.8rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    transition: color 0.2s;
+}
+.edit-btn:hover { color: var(--green); }
 
-    /* ── SCORE DISPLAY ── */
-    .score-section {
-        width: 100%;
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        border-bottom: 1px solid var(--border);
-        position: relative;
-        overflow: hidden;
-    }
-    .score-bg-text {
-        position: absolute;
-        font-family: var(--display);
-        font-size: 14rem;
-        font-weight: 900;
-        color: rgba(0,255,65,0.03);
-        pointer-events: none;
-        user-select: none;
-        letter-spacing: -10px;
-        line-height: 1;
-    }
-    .score-label {
-        font-size: 0.6rem;
-        letter-spacing: 4px;
-        color: var(--gray);
-        margin-bottom: 8px;
-        z-index: 1;
-    }
-    .score-value {
-        font-family: var(--display);
-        font-size: 9rem;
-        font-weight: 900;
-        color: var(--green);
-        line-height: 1;
-        text-shadow: 0 0 40px rgba(0,255,65,0.3);
-        cursor: pointer;
-        transition: all 0.2s;
-        z-index: 1;
-        user-select: none;
-    }
-    .score-value.cooldown {
-        color: var(--gray);
-        text-shadow: none;
-        transform: scale(0.96);
-    }
-    .score-value:active { transform: scale(0.94); }
+/* ── SCORE DISPLAY ── */
+.score-section {
+    width: 100%;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+}
+.score-bg-text {
+    position: absolute;
+    font-family: var(--display);
+    font-size: 14rem;
+    font-weight: 900;
+    color: rgba(0,255,65,0.03);
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: -10px;
+    line-height: 1;
+}
+.score-label {
+    font-size: 0.6rem;
+    letter-spacing: 4px;
+    color: var(--gray);
+    margin-bottom: 8px;
+    z-index: 1;
+}
+.score-value {
+    font-family: var(--display);
+    font-size: 9rem;
+    font-weight: 900;
+    color: var(--green);
+    line-height: 1;
+    text-shadow: 0 0 40px rgba(0,255,65,0.3);
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 1;
+    user-select: none;
+}
+.score-value.cooldown {
+    color: var(--gray);
+    text-shadow: none;
+    transform: scale(0.96);
+}
+.score-value:active { transform: scale(0.94); }
 
-    /* ── LEADERBOARD ── */
-    .leaderboard-section {
-        width: 100%;
-        padding: 0 16px;
-        margin-top: 20px;
-    }
-    .lb-header {
-        font-size: 0.6rem;
-        letter-spacing: 4px;
-        color: var(--gray);
-        padding: 0 8px;
-        margin-bottom: 12px;
-    }
-    .lb-row {
-        display: flex;
-        align-items: center;
-        padding: 14px 16px;
-        margin-bottom: 6px;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-left: 3px solid transparent;
-        transition: all 0.2s;
-    }
-    .lb-row.me {
-        border-left-color: var(--green);
-        background: #0a1a0a;
-    }
-    .lb-rank {
-        font-size: 0.65rem;
-        color: var(--gray);
-        width: 28px;
-        flex-shrink: 0;
-    }
-    .lb-rank.top { color: var(--amber); }
-    .lb-name {
-        flex: 1;
-        font-family: var(--display);
-        font-size: 1rem;
-        font-weight: 700;
-        letter-spacing: 2px;
-        color: var(--text);
-    }
-    .lb-row.me .lb-name { color: var(--green); }
-    .lb-score {
-        font-family: var(--display);
-        font-size: 1.3rem;
-        font-weight: 900;
-        color: var(--text);
-        letter-spacing: 1px;
-    }
-    .lb-row.me .lb-score { color: var(--green); }
-    .lb-empty {
-        text-align: center;
-        padding: 40px;
-        font-size: 0.7rem;
-        letter-spacing: 3px;
-        color: #222;
-    }
+/* ── LEADERBOARD ── */
+.leaderboard-section {
+    width: 100%;
+    padding: 0 16px;
+    margin-top: 20px;
+}
+.lb-header {
+    font-size: 0.6rem;
+    letter-spacing: 4px;
+    color: var(--gray);
+    padding: 0 8px;
+    margin-bottom: 12px;
+}
+.lb-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    margin-bottom: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+}
+.lb-row.me {
+    border-left-color: var(--green);
+    background: #0a1a0a;
+}
+.lb-rank {
+    font-size: 0.65rem;
+    color: var(--gray);
+    width: 28px;
+    flex-shrink: 0;
+}
+.lb-rank.top { color: var(--amber); }
+.lb-name {
+    flex: 1;
+    font-family: var(--display);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text);
+}
+.lb-row.me .lb-name { color: var(--green); }
+.lb-score {
+    font-family: var(--display);
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: 1px;
+}
+.lb-row.me .lb-score { color: var(--green); }
+.lb-empty {
+    text-align: center;
+    padding: 40px;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: #222;
+}
 
-    /* ── MODAL ── */
-    .modal-backdrop {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.92);
-        z-index: 500;
-        align-items: center;
-        justify-content: center;
-    }
-    .modal-backdrop.open { display: flex; }
-    .modal-card {
-        width: 82%;
-        max-width: 300px;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        padding: 28px 24px;
-        position: relative;
-    }
-    .modal-accent { height: 3px; position: absolute; top: 0; left: 0; right: 0; background: var(--red); }
-    .modal-accent.green { background: var(--green); }
-    .modal-title {
-        font-family: var(--display);
-        font-size: 1.1rem;
-        font-weight: 900;
-        letter-spacing: 4px;
-        margin-bottom: 12px;
-    }
-    .modal-text {
-        font-size: 0.75rem;
-        color: #888;
-        line-height: 1.6;
-        margin-bottom: 20px;
-        letter-spacing: 0.5px;
-    }
+/* ── MODAL ── */
+.modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+}
+.modal-backdrop.open { display: flex; }
+.modal-card {
+    width: 82%;
+    max-width: 300px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px 24px;
+    position: relative;
+}
+.modal-accent { height: 3px; position: absolute; top: 0; left: 0; right: 0; background: var(--red); }
+.modal-accent.green { background: var(--green); }
+.modal-title {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    margin-bottom: 12px;
+}
+.modal-text {
+    font-size: 0.75rem;
+    color: #888;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+}
 
-    /* ── SCANNER (hidden focus trap) ── */
-    #scanner {
-        position: fixed;
-        left: -9999px;
-        top: 0;
-        width: 1px;
-        height: 1px;
-        opacity: 0;
-    }
+/* ── SCANNER ── */
+#scanner {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+/* ── DEBUG (optional - remove in production) ── */
+#debug-log {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.9);
+    color: var(--green);
+    font-size: 0.65rem;
+    padding: 10px;
+    border: 1px solid var(--border);
+    max-height: 150px;
+    overflow-y: auto;
+    display: none; /* Change to 'block' to see debug logs */
+    z-index: 1000;
+}
+```
+
 </style>
 
 </head>
 <body>
 
+<!-- Debug log (optional) -->
+
+<div id="debug-log"></div>
+
 <!-- ── MODAL ── -->
+
 <div id="modal" class="modal-backdrop">
     <div class="modal-card">
         <div id="modal-accent" class="modal-accent"></div>
@@ -434,6 +459,7 @@
 </div>
 
 <!-- ── AUTH SCREEN ── -->
+
 <div id="auth-screen" class="screen active">
     <div class="auth-card">
         <div class="auth-title">ZEBRA TAG</div>
@@ -450,6 +476,7 @@
 </div>
 
 <!-- ── GAME SCREEN ── -->
+
 <div id="game-screen">
     <div class="topbar">
         <div class="topbar-brand">ZEBRA TAG</div>
@@ -462,30 +489,34 @@
         </div>
     </div>
 
-    <div class="player-section">
-        <div class="player-label">OPERATOR</div>
-        <div class="player-name-row">
-            <div class="player-name" id="op-name">LOADING</div>
-            <button class="edit-btn" onclick="promptNameChange()">✎</button>
-        </div>
-    </div>
-
-    <div class="score-section">
-        <div class="score-bg-text" id="score-bg">0</div>
-        <div class="score-label">TOTAL POINTS</div>
-        <div class="score-value" id="my-count" onclick="iScored()">0</div>
-    </div>
-
-    <div class="leaderboard-section">
-        <div class="lb-header">GLOBAL LEADERBOARD</div>
-        <div id="leaderboard-content">
-            <div class="lb-empty">NO DATA</div>
-        </div>
-        <button id="admin-wipe" class="btn btn-danger" onclick="wipeAllData()">⚠ ERASE ENTIRE BOARD</button>
+```
+<div class="player-section">
+    <div class="player-label">OPERATOR</div>
+    <div class="player-name-row">
+        <div class="player-name" id="op-name">LOADING</div>
+        <button class="edit-btn" onclick="promptNameChange()">✎</button>
     </div>
 </div>
 
+<div class="score-section">
+    <div class="score-bg-text" id="score-bg">0</div>
+    <div class="score-label">TOTAL POINTS</div>
+    <div class="score-value" id="my-count" onclick="iScored()">0</div>
+</div>
+
+<div class="leaderboard-section">
+    <div class="lb-header">GLOBAL LEADERBOARD</div>
+    <div id="leaderboard-content">
+        <div class="lb-empty">NO DATA</div>
+    </div>
+    <button id="admin-wipe" class="btn btn-danger" onclick="wipeAllData()">⚠ ERASE ENTIRE BOARD</button>
+</div>
+```
+
+</div>
+
 <!-- Hidden scanner input: receives DataWedge keystrokes -->
+
 <input type="text" id="scanner" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
 <script>
@@ -502,6 +533,18 @@ const RESET_TAG       = "SHP RR01";
 const SCAN_PREFIX     = "SHP MD01";
 const COOLDOWN_MS     = 1000;
 const SCAN_DEBOUNCE_MS = 100;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DEBUG HELPER (optional)
+// ─────────────────────────────────────────────────────────────────────────────
+function debugLog(msg) {
+    const log = document.getElementById('debug-log');
+    if (log && log.style.display !== 'none') {
+        const time = new Date().toLocaleTimeString();
+        log.innerHTML = `[${time}] ${msg}<br>` + log.innerHTML;
+    }
+    console.log(msg);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FIREBASE
@@ -578,7 +621,11 @@ function renderLeaderboard() {
 // SCORE / RESET
 // ─────────────────────────────────────────────────────────────────────────────
 function iScored() {
-    if (!canScan || !auth.currentUser) return;
+    if (!canScan || !auth.currentUser) {
+        debugLog('Cannot score: canScan=' + canScan + ', user=' + !!auth.currentUser);
+        return;
+    }
+    debugLog('✓ SCORE REGISTERED');
     canScan = false;
     document.getElementById('my-count').classList.add('cooldown');
     db.ref(`global_scores/${auth.currentUser.uid}`).transaction(v => (v || 0) + 1);
@@ -589,6 +636,7 @@ function iScored() {
 }
 
 function triggerHardReset() {
+    debugLog('⚠ HARD RESET TRIGGERED');
     lastScores = null;
     renderLeaderboard();
     db.ref('global_scores').set(null)
@@ -596,38 +644,56 @@ function triggerHardReset() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCANNER
+// SCANNER - FIXED VERSION
 // Handles all DataWedge keystroke output modes:
-//   • No suffix    → input event + 100ms debounce
+//   • No suffix    → input event + debounce
 //   • Enter suffix → keydown Enter
-//   • Tab suffix   → keydown Tab (focus steal prevented)
+//   • Tab suffix   → keydown Tab
 // ─────────────────────────────────────────────────────────────────────────────
 const scannerEl = document.getElementById('scanner');
-let scanBuffer  = '';
 let scanTimer   = null;
 
 function processScan(raw) {
     const val = raw.toUpperCase().trim();
-    if (!val) return;
-    if (val === RESET_TAG)               triggerHardReset();
-    else if (val.startsWith(SCAN_PREFIX)) iScored();
+    debugLog('Processing scan: "' + val + '"');
+    
+    if (!val) {
+        debugLog('Empty scan value, ignoring');
+        return;
+    }
+    
+    if (val === RESET_TAG) {
+        debugLog('✓ RESET TAG detected!');
+        triggerHardReset();
+    } else if (val.startsWith(SCAN_PREFIX)) {
+        debugLog('✓ SCORE TAG detected!');
+        iScored();
+    } else {
+        debugLog('✗ Unrecognized tag: ' + val);
+    }
 }
 
 function flushScan() {
-    processScan(scannerEl.value);
+    const value = scannerEl.value.trim();
+    debugLog('Flushing scan buffer: "' + value + '"');
+    if (value) {
+        processScan(value);
+    }
     scannerEl.value = '';
-    scanBuffer = '';
 }
 
+// Listen for input changes (handles "no suffix" mode)
 scannerEl.addEventListener('input', () => {
-    scanBuffer = scannerEl.value;
+    debugLog('Scanner input detected: "' + scannerEl.value + '"');
     clearTimeout(scanTimer);
     scanTimer = setTimeout(flushScan, SCAN_DEBOUNCE_MS);
 });
 
+// Listen for Enter/Tab (handles suffix modes)
 scannerEl.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === 'Tab') {
-        if (e.key === 'Tab') e.preventDefault();
+        debugLog('Key detected: ' + e.key);
+        e.preventDefault();
         clearTimeout(scanTimer);
         flushScan();
     }
@@ -643,7 +709,10 @@ function forceScannerFocus() {
     const authActive = document.getElementById('auth-screen').classList.contains('active');
     const active     = document.activeElement;
     const userTyping = active && active !== scannerEl && active.tagName === 'INPUT';
-    if (!modalOpen && !authActive && !userTyping) scannerEl.focus();
+    
+    if (!modalOpen && !authActive && !userTyping) {
+        scannerEl.focus();
+    }
 }
 
 setInterval(forceScannerFocus, 300);
@@ -680,6 +749,7 @@ auth.onAuthStateChanged(user => {
             });
 
             forceScannerFocus();
+            debugLog('✓ User authenticated, scanner ready');
         });
     } else {
         document.getElementById('game-screen').style.display = 'none';
