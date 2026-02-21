@@ -37,56 +37,6 @@
         overflow-x: hidden;
     }
 
-    /* Landscape warning overlay */
-    .landscape-warning {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: var(--bg);
-        z-index: 10000;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 40px;
-    }
-
-    .landscape-warning-icon {
-        font-size: 4rem;
-        margin-bottom: 20px;
-        animation: rotate-phone 1.5s ease-in-out infinite;
-    }
-
-    @keyframes rotate-phone {
-        0%, 100% { transform: rotate(0deg); }
-        50% { transform: rotate(90deg); }
-    }
-
-    .landscape-warning-text {
-        font-family: var(--display);
-        font-size: 1.5rem;
-        font-weight: 900;
-        color: var(--green);
-        letter-spacing: 4px;
-        margin-bottom: 10px;
-    }
-
-    .landscape-warning-sub {
-        font-size: 0.8rem;
-        color: var(--gray);
-        letter-spacing: 2px;
-    }
-
-    @media (orientation: landscape) and (max-height: 600px) {
-        .landscape-warning {
-            display: flex;
-        }
-        #auth-screen,
-        #game-screen {
-            display: none !important;
-        }
-    }
-
     body::after {
         content: '';
         position: fixed;
@@ -463,12 +413,6 @@
 </head>
 <body>
 
-<div class="landscape-warning">
-    <div class="landscape-warning-icon">📱</div>
-    <div class="landscape-warning-text">ROTATE DEVICE</div>
-    <div class="landscape-warning-sub">Portrait mode required</div>
-</div>
-
 <div id="modal" class="modal-backdrop">
     <div class="modal-card">
         <div id="modal-accent" class="modal-accent"></div>
@@ -551,16 +495,42 @@ firebase.initializeApp(FIREBASE_CONFIG);
 const db = firebase.database();
 const auth = firebase.auth();
 
-// Attempt to lock orientation to portrait using Screen Orientation API
-if (window.screen && window.screen.orientation) {
-    try {
-        window.screen.orientation.lock('portrait').catch(err => {
-            console.log('Orientation lock not supported or failed:', err);
+// Aggressive orientation lock attempt
+function lockOrientation() {
+    if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('portrait').catch(err => {
+            console.log('Orientation lock failed:', err);
         });
-    } catch (err) {
-        console.log('Orientation lock not available:', err);
     }
 }
+
+// Try to lock orientation on load
+lockOrientation();
+
+// Try to lock when entering fullscreen
+document.addEventListener('fullscreenchange', lockOrientation);
+document.addEventListener('webkitfullscreenchange', lockOrientation);
+
+// Retry orientation lock on orientation change
+window.addEventListener('orientationchange', () => {
+    setTimeout(lockOrientation, 100);
+});
+
+// Request fullscreen on first user interaction (required for orientation lock on many devices)
+let fullscreenRequested = false;
+function requestFullscreenOnce() {
+    if (!fullscreenRequested && document.documentElement.requestFullscreen) {
+        fullscreenRequested = true;
+        document.documentElement.requestFullscreen().then(() => {
+            lockOrientation();
+        }).catch(() => {
+            // Fullscreen denied, orientation lock may not work
+        });
+    }
+}
+
+document.addEventListener('touchstart', requestFullscreenOnce, { once: true });
+document.addEventListener('click', requestFullscreenOnce, { once: true });
 
 let nameMap = {};
 let lastScores = null;
