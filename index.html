@@ -427,7 +427,7 @@
 <div id="auth-screen" class="screen active">
     <div class="auth-card">
         <div class="auth-title">ZEBRA TAG</div>
-        <div class="auth-sub">FIELD SCORING SYSTEM · V0.4</div>
+        <div class="auth-sub">FIELD SCORING SYSTEM · V0.5</div>
         <div id="reg-fields" style="display:none">
             <input class="field" type="text" id="username-input" placeholder="DISPLAY NAME">
         </div>
@@ -477,7 +477,7 @@
 
 </div>
 
-<input type="text" id="scanner" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+<input type="text" id="scanner" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" readonly>
 
 <script>
 const FIREBASE_CONFIG = {
@@ -486,8 +486,8 @@ const FIREBASE_CONFIG = {
     databaseURL: "https://zebratagpro-default-rtdb.firebaseio.com/"
 };
 const ADMIN_UIDS = ["ssrP3E1JuvgvREJSP2mDEcggkeW2"];
-const RESET_TAG = "SHP RR01";
-const SCAN_PREFIX = "SHP MD01";
+const RESET_TAG = "SHPRR01";
+const SCAN_PREFIX = "SHP ";
 const COOLDOWN_MS = 1000;
 const SCAN_DEBOUNCE_MS = 100;
 
@@ -495,7 +495,6 @@ firebase.initializeApp(FIREBASE_CONFIG);
 const db = firebase.database();
 const auth = firebase.auth();
 
-// Aggressive orientation lock attempt
 function lockOrientation() {
     if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('portrait').catch(err => {
@@ -504,19 +503,15 @@ function lockOrientation() {
     }
 }
 
-// Try to lock orientation on load
 lockOrientation();
 
-// Try to lock when entering fullscreen
 document.addEventListener('fullscreenchange', lockOrientation);
 document.addEventListener('webkitfullscreenchange', lockOrientation);
 
-// Retry orientation lock on orientation change
 window.addEventListener('orientationchange', () => {
     setTimeout(lockOrientation, 100);
 });
 
-// Request fullscreen on first user interaction (required for orientation lock on many devices)
 let fullscreenRequested = false;
 function requestFullscreenOnce() {
     if (!fullscreenRequested && document.documentElement.requestFullscreen) {
@@ -524,7 +519,7 @@ function requestFullscreenOnce() {
         document.documentElement.requestFullscreen().then(() => {
             lockOrientation();
         }).catch(() => {
-            // Fullscreen denied, orientation lock may not work
+            // Fullscreen denied
         });
     }
 }
@@ -610,7 +605,15 @@ function triggerHardReset() {
     lastScores = null;
     renderLeaderboard();
     db.ref('global_scores').set(null)
-        .catch(e => openModal({ title: 'ERROR', text: e.message }));
+        .catch(e => openModal({ title: 'ERROR', text: e.message, onConfirm: () => {} }));
+}
+
+function confirmReset() {
+    openModal({
+        title: 'RESET DETECTED',
+        text: 'SHPRR01 scanned. This will erase ALL scores. Confirm to proceed.',
+        onConfirm: () => triggerHardReset()
+    });
 }
 
 const scannerEl = document.getElementById('scanner');
@@ -621,7 +624,7 @@ function processScan(raw) {
     if (!val) return;
     
     if (val === RESET_TAG) {
-        triggerHardReset();
+        confirmReset();
     } else if (val.startsWith(SCAN_PREFIX)) {
         iScored();
     }
@@ -648,32 +651,6 @@ scannerEl.addEventListener('keydown', e => {
     }
 });
 
-function forceScannerFocus() {
-    const modalOpen = document.getElementById('modal').classList.contains('open');
-    const authActive = document.getElementById('auth-screen').classList.contains('active');
-    const active = document.activeElement;
-    const userTyping = active && active !== scannerEl && active.tagName === 'INPUT';
-    
-    if (!modalOpen && !authActive && !userTyping) {
-        scannerEl.focus();
-    }
-}
-
-setInterval(forceScannerFocus, 300);
-scannerEl.addEventListener('blur', () => setTimeout(forceScannerFocus, 200));
-
-document.addEventListener('touchend', e => {
-    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
-        setTimeout(forceScannerFocus, 150);
-    }
-});
-
-document.addEventListener('click', e => {
-    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
-        setTimeout(forceScannerFocus, 150);
-    }
-});
-
 auth.onAuthStateChanged(user => {
     if (user) {
         db.ref(`users/${user.uid}`).get().then(snap => {
@@ -692,8 +669,6 @@ auth.onAuthStateChanged(user => {
                 lastScores = s;
                 renderLeaderboard();
             });
-
-            forceScannerFocus();
         });
     } else {
         document.getElementById('game-screen').style.display = 'none';
@@ -707,7 +682,7 @@ async function handleAuth() {
     const isReg = document.getElementById('reg-fields').style.display !== 'none';
     
     if (!email || !pass) {
-        openModal({ title: 'ERROR', text: 'Please enter email and password.' });
+        openModal({ title: 'ERROR', text: 'Please enter email and password.', onConfirm: () => {} });
         return;
     }
     
@@ -720,7 +695,7 @@ async function handleAuth() {
             await auth.signInWithEmailAndPassword(email, pass);
         }
     } catch (e) {
-        openModal({ title: 'ERROR', text: e.message });
+        openModal({ title: 'ERROR', text: e.message, onConfirm: () => {} });
     }
 }
 
