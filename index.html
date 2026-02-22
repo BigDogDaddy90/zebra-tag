@@ -4,15 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>ZEBRA TAG</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
+        /* ── TOKENS ── */
         :root {
             --green:   #00ff41;
             --green-dim: #00a828;
@@ -28,6 +26,7 @@
         }
 
 ```
+    /* ── RESET ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
         background: var(--bg);
@@ -37,6 +36,7 @@
         overflow-x: hidden;
     }
 
+    /* ── SCANLINES OVERLAY ── */
     body::after {
         content: '';
         position: fixed;
@@ -52,6 +52,7 @@
         z-index: 9999;
     }
 
+    /* ── SCREENS ── */
     .screen {
         display: none;
         position: fixed;
@@ -64,6 +65,7 @@
     }
     .screen.active { display: flex; }
 
+    /* ── AUTH ── */
     .auth-card {
         width: 88%;
         max-width: 360px;
@@ -162,6 +164,7 @@
         text-decoration: underline;
     }
 
+    /* ── GAME SCREEN ── */
     #game-screen {
         display: none;
         flex-direction: column;
@@ -173,6 +176,7 @@
         padding-bottom: 40px;
     }
 
+    /* ── TOP BAR ── */
     .topbar {
         position: fixed;
         top: 0;
@@ -226,6 +230,7 @@
         padding: 0;
     }
 
+    /* ── PLAYER HERO ── */
     .player-section {
         width: 100%;
         padding: 28px 24px 20px;
@@ -251,17 +256,16 @@
     }
     .edit-btn {
         color: var(--gray);
-        font-size: 0.7rem;
+        font-size: 0.8rem;
         cursor: pointer;
         background: none;
         border: none;
         padding: 0;
         transition: color 0.2s;
-        font-family: var(--mono);
-        letter-spacing: 1px;
     }
     .edit-btn:hover { color: var(--green); }
 
+    /* ── SCORE DISPLAY ── */
     .score-section {
         width: 100%;
         padding: 24px;
@@ -297,17 +301,19 @@
         color: var(--green);
         line-height: 1;
         text-shadow: 0 0 40px rgba(0,255,65,0.3);
+        cursor: pointer;
         transition: all 0.2s;
         z-index: 1;
         user-select: none;
-        pointer-events: none;
     }
     .score-value.cooldown {
         color: var(--gray);
         text-shadow: none;
         transform: scale(0.96);
     }
+    .score-value:active { transform: scale(0.94); }
 
+    /* ── LEADERBOARD ── */
     .leaderboard-section {
         width: 100%;
         padding: 0 16px;
@@ -366,6 +372,7 @@
         color: #222;
     }
 
+    /* ── MODAL ── */
     .modal-backdrop {
         display: none;
         position: fixed;
@@ -401,6 +408,7 @@
         letter-spacing: 0.5px;
     }
 
+    /* ── SCANNER (hidden focus trap) ── */
     #scanner {
         position: fixed;
         left: -9999px;
@@ -415,6 +423,8 @@
 </head>
 <body>
 
+```
+<!-- ── MODAL ── -->
 <div id="modal" class="modal-backdrop">
     <div class="modal-card">
         <div id="modal-accent" class="modal-accent"></div>
@@ -426,10 +436,11 @@
     </div>
 </div>
 
+<!-- ── AUTH SCREEN ── -->
 <div id="auth-screen" class="screen active">
     <div class="auth-card">
         <div class="auth-title">ZEBRA TAG</div>
-        <div class="auth-sub">FIELD SCORING SYSTEM</div>
+        <div class="auth-sub">FIELD SCORING SYSTEM · V0.3</div>
         <div id="reg-fields" style="display:none">
             <input class="field" type="text" id="username-input" placeholder="DISPLAY NAME">
         </div>
@@ -441,6 +452,7 @@
     </div>
 </div>
 
+<!-- ── GAME SCREEN ── -->
 <div id="game-screen">
     <div class="topbar">
         <div class="topbar-brand">ZEBRA TAG</div>
@@ -453,82 +465,72 @@
         </div>
     </div>
 
-```
-<div class="player-section">
-    <div class="player-label">OPERATOR</div>
-    <div class="player-name-row">
-        <div class="player-name" id="op-name">LOADING</div>
-        <button class="edit-btn" onclick="promptNameChange()">EDIT</button>
+    <div class="player-section">
+        <div class="player-label">OPERATOR</div>
+        <div class="player-name-row">
+            <div class="player-name" id="op-name">LOADING</div>
+            <button class="edit-btn" onclick="promptNameChange()">✎</button>
+        </div>
+    </div>
+
+    <div class="score-section">
+        <div class="score-bg-text" id="score-bg">0</div>
+        <div class="score-label">TOTAL POINTS</div>
+        <div class="score-value" id="my-count" onclick="iScored()">0</div>
+    </div>
+
+    <div class="leaderboard-section">
+        <div class="lb-header">GLOBAL LEADERBOARD</div>
+        <div id="leaderboard-content">
+            <div class="lb-empty">NO DATA</div>
+        </div>
+        <button id="admin-wipe" class="btn btn-danger" onclick="wipeAllData()">⚠ ERASE ENTIRE BOARD</button>
     </div>
 </div>
 
-<div class="score-section">
-    <div class="score-bg-text" id="score-bg">0</div>
-    <div class="score-label">TOTAL POINTS</div>
-    <div class="score-value" id="my-count">0</div>
-</div>
-
-<div class="leaderboard-section">
-    <div class="lb-header">GLOBAL LEADERBOARD</div>
-    <div id="leaderboard-content">
-        <div class="lb-empty">NO DATA</div>
-    </div>
-    <button id="admin-wipe" class="btn btn-danger" onclick="wipeAllData()">ERASE ENTIRE BOARD</button>
-</div>
-```
-
-</div>
-
+<!-- Hidden scanner input: receives DataWedge keystrokes -->
 <input type="text" id="scanner" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
 <script>
+// ─────────────────────────────────────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────────────────────────────────────
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyDFIuHkzGlTNn20-2hVyQUwaKXyqZ9kPRc",
     projectId: "zebratagpro",
     databaseURL: "https://zebratagpro-default-rtdb.firebaseio.com/"
 };
-const ADMIN_UIDS = ["ssrP3E1JuvgvREJSP2mDEcggkeW2"];
-const RESET_TAG = "SHPRR01";
-const SCAN_PREFIX = "SHPMD01";
-const COOLDOWN_MS = 1000;
+const ADMIN_UIDS      = ["ssrP3E1JuvgvREJSP2mDEcggkeW2"];
+const RESET_TAG       = "SHPRR01";
+const SCAN_PREFIX     = "SHPMD01";
+const COOLDOWN_MS     = 1000;
 const SCAN_DEBOUNCE_MS = 100;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FIREBASE
+// ─────────────────────────────────────────────────────────────────────────────
 firebase.initializeApp(FIREBASE_CONFIG);
-const db = firebase.database();
+const db   = firebase.database();
 const auth = firebase.auth();
 
-function lockOrientation() {
-    if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('portrait').catch(() => {});
-    }
-}
-lockOrientation();
-document.addEventListener('fullscreenchange', lockOrientation);
-document.addEventListener('webkitfullscreenchange', lockOrientation);
-window.addEventListener('orientationchange', () => setTimeout(lockOrientation, 100));
-
-let fullscreenRequested = false;
-function requestFullscreenOnce() {
-    if (!fullscreenRequested && document.documentElement.requestFullscreen) {
-        fullscreenRequested = true;
-        document.documentElement.requestFullscreen().then(() => lockOrientation()).catch(() => {});
-    }
-}
-document.addEventListener('touchstart', requestFullscreenOnce, { once: true });
-document.addEventListener('click', requestFullscreenOnce, { once: true });
-
-let nameMap = {};
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+let nameMap    = {};
 let lastScores = null;
-let canScan = true;
+let canScan    = true;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// MODAL
+// ─────────────────────────────────────────────────────────────────────────────
 function openModal({ title, text, onConfirm, color = 'red', showInput = false }) {
     const isGreen = color === 'green';
-    document.getElementById('modal-title').textContent = title;
-    document.getElementById('modal-title').style.color = isGreen ? 'var(--green)' : 'var(--red)';
-    document.getElementById('modal-accent').className = 'modal-accent' + (isGreen ? ' green' : '');
-    document.getElementById('modal-text').textContent = text;
+    document.getElementById('modal-title').textContent  = title;
+    document.getElementById('modal-title').style.color  = isGreen ? 'var(--green)' : 'var(--red)';
+    document.getElementById('modal-accent').className   = 'modal-accent' + (isGreen ? ' green' : '');
+    document.getElementById('modal-text').textContent   = text;
     document.getElementById('modal-input-wrap').innerHTML = showInput
-        ? '<input class="field" type="text" id="modal-field" placeholder="NEW NAME" style="margin-bottom:16px">'
+        ? `<input class="field" type="text" id="modal-field" placeholder="NEW NAME" style="margin-bottom:16px">`
         : '';
     document.getElementById('modal').classList.add('open');
     document.getElementById('modal-confirm').onclick = () => {
@@ -542,41 +544,47 @@ function closeModal() {
     document.getElementById('modal').classList.remove('open');
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// LEADERBOARD
+// ─────────────────────────────────────────────────────────────────────────────
 function renderLeaderboard() {
     const user = auth.currentUser;
     if (!user) return;
 
     const scoreEl = document.getElementById('my-count');
-    const bgEl = document.getElementById('score-bg');
-    const board = document.getElementById('leaderboard-content');
+    const bgEl    = document.getElementById('score-bg');
+    const board   = document.getElementById('leaderboard-content');
 
     if (!lastScores?.exists()) {
         scoreEl.textContent = '0';
-        bgEl.textContent = '0';
-        board.innerHTML = '<div class="lb-empty">NO DATA</div>';
+        bgEl.textContent    = '0';
+        board.innerHTML     = '<div class="lb-empty">NO DATA</div>';
         return;
     }
 
-    const scores = lastScores.val();
+    const scores  = lastScores.val();
     const myScore = scores[user.uid] ?? 0;
     scoreEl.textContent = myScore;
-    bgEl.textContent = myScore;
+    bgEl.textContent    = myScore;
 
     const sorted = Object.entries(scores).sort(([,a],[,b]) => b - a);
-    board.innerHTML = sorted.map(([uid, score], i) => {
-        return '<div class="lb-row ' + (uid === user.uid ? 'me' : '') + '">' +
-            '<span class="lb-rank ' + (i < 3 ? 'top' : '') + '">' + String(i + 1).padStart(2, '0') + '</span>' +
-            '<span class="lb-name">' + (nameMap[uid] ?? 'OPERATOR') + '</span>' +
-            '<span class="lb-score">' + score + '</span>' +
-            '</div>';
-    }).join('');
+    board.innerHTML = sorted.map(([uid, score], i) => `
+        <div class="lb-row ${uid === user.uid ? 'me' : ''}">
+            <span class="lb-rank ${i < 3 ? 'top' : ''}">${String(i + 1).padStart(2, '0')}</span>
+            <span class="lb-name">${nameMap[uid] ?? 'OPERATOR'}</span>
+            <span class="lb-score">${score}</span>
+        </div>
+    `).join('');
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// SCORE / RESET
+// ─────────────────────────────────────────────────────────────────────────────
 function iScored() {
     if (!canScan || !auth.currentUser) return;
     canScan = false;
     document.getElementById('my-count').classList.add('cooldown');
-    db.ref('global_scores/' + auth.currentUser.uid).transaction(v => (v || 0) + 1);
+    db.ref(`global_scores/${auth.currentUser.uid}`).transaction(v => (v || 0) + 1);
     setTimeout(() => {
         canScan = true;
         document.getElementById('my-count').classList.remove('cooldown');
@@ -587,25 +595,24 @@ function triggerHardReset() {
     lastScores = null;
     renderLeaderboard();
     db.ref('global_scores').set(null)
-        .catch(e => openModal({ title: 'ERROR', text: e.message, onConfirm: () => {} }));
+        .catch(e => openModal({ title: 'ERROR', text: e.message }));
 }
 
-function confirmReset() {
-    openModal({
-        title: 'RESET DETECTED',
-        text: 'SHPRR01 scanned. This will erase ALL scores. Confirm to proceed.',
-        onConfirm: () => triggerHardReset()
-    });
-}
-
+// ─────────────────────────────────────────────────────────────────────────────
+// SCANNER
+// Handles all DataWedge keystroke output modes:
+//   • No suffix    → input event + 100ms debounce
+//   • Enter suffix → keydown Enter
+//   • Tab suffix   → keydown Tab (focus steal prevented)
+// ─────────────────────────────────────────────────────────────────────────────
 const scannerEl = document.getElementById('scanner');
-let scanBuffer = '';
-let scanTimer = null;
+let scanBuffer  = '';
+let scanTimer   = null;
 
 function processScan(raw) {
     const val = raw.toUpperCase().trim();
     if (!val) return;
-    if (val === RESET_TAG) confirmReset();
+    if (val === RESET_TAG)               triggerHardReset();
     else if (val.startsWith(SCAN_PREFIX)) iScored();
 }
 
@@ -629,10 +636,15 @@ scannerEl.addEventListener('keydown', e => {
     }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FOCUS MANAGEMENT
+// Keeps the hidden scanner input focused to capture all DataWedge keystrokes.
+// Backs off only when the user is intentionally typing in a visible input.
+// ─────────────────────────────────────────────────────────────────────────────
 function forceScannerFocus() {
-    const modalOpen = document.getElementById('modal').classList.contains('open');
+    const modalOpen  = document.getElementById('modal').classList.contains('open');
     const authActive = document.getElementById('auth-screen').classList.contains('active');
-    const active = document.activeElement;
+    const active     = document.activeElement;
     const userTyping = active && active !== scannerEl && active.tagName === 'INPUT';
     if (!modalOpen && !authActive && !userTyping) scannerEl.focus();
 }
@@ -648,9 +660,12 @@ document.addEventListener('click', e => {
         setTimeout(forceScannerFocus, 150);
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────────────────────────────────────
 auth.onAuthStateChanged(user => {
     if (user) {
-        db.ref('users/' + user.uid).get().then(snap => {
+        db.ref(`users/${user.uid}`).get().then(snap => {
             document.getElementById('op-name').textContent = snap.val()?.name ?? 'OPERATOR';
             document.getElementById('admin-wipe').style.display = ADMIN_UIDS.includes(user.uid) ? 'block' : 'none';
             document.getElementById('auth-screen').classList.remove('active');
@@ -677,37 +692,29 @@ auth.onAuthStateChanged(user => {
 
 async function handleAuth() {
     const email = document.getElementById('email-input').value.trim();
-    const pass = document.getElementById('pass-input').value;
+    const pass  = document.getElementById('pass-input').value;
     const isReg = document.getElementById('reg-fields').style.display !== 'none';
-    
-    if (!email || !pass) {
-        openModal({ title: 'ERROR', text: 'Please enter email and password.', onConfirm: () => {} });
-        return;
-    }
-    
     try {
         if (isReg) {
             const name = document.getElementById('username-input').value.trim().toUpperCase() || 'OPERATOR';
-            const res = await auth.createUserWithEmailAndPassword(email, pass);
-            await db.ref('users/' + res.user.uid).set({ name });
+            const res  = await auth.createUserWithEmailAndPassword(email, pass);
+            await db.ref(`users/${res.user.uid}`).set({ name });
         } else {
             await auth.signInWithEmailAndPassword(email, pass);
         }
     } catch (e) {
-        openModal({ title: 'ERROR', text: e.message, onConfirm: () => {} });
+        openModal({ title: 'ERROR', text: e.message });
     }
 }
 
 function toggleAuth() {
     const toRegister = document.getElementById('reg-fields').style.display === 'none';
     document.getElementById('reg-fields').style.display = toRegister ? 'block' : 'none';
-    document.getElementById('toggle-text').textContent = toRegister ? 'LOGIN' : 'REGISTER';
-    document.getElementById('auth-btn').textContent = toRegister ? 'REGISTER' : 'LOGIN';
+    document.getElementById('toggle-text').textContent  = toRegister ? 'LOGIN' : 'REGISTER';
+    document.getElementById('auth-btn').textContent     = toRegister ? 'REGISTER' : 'LOGIN';
 }
 
-function handleSignOut() {
-    auth.signOut().then(() => location.reload());
-}
+function handleSignOut() { auth.signOut().then(() => location.reload()); }
 
 function wipeAllData() {
     openModal({
@@ -726,7 +733,7 @@ function promptNameChange() {
         onConfirm: val => {
             if (!val?.trim()) return;
             const name = val.trim().toUpperCase();
-            db.ref('users/' + auth.currentUser.uid + '/name').set(name);
+            db.ref(`users/${auth.currentUser.uid}/name`).set(name);
             document.getElementById('op-name').textContent = name;
             nameMap[auth.currentUser.uid] = name;
             renderLeaderboard();
@@ -736,24 +743,25 @@ function promptNameChange() {
 
 async function handleForgotPassword() {
     const email = document.getElementById('email-input').value.trim();
-    if (!email) {
-        openModal({ title: 'REQUIRED', text: 'Enter your email address first.', color: 'green', onConfirm: () => {} });
-        return;
-    }
+    if (!email) return openModal({ title: 'REQUIRED', text: 'Enter your email address first.', color: 'green' });
     try {
         await auth.sendPasswordResetEmail(email);
-        openModal({ title: 'EMAIL SENT', text: 'Check your inbox for a reset link.', color: 'green', onConfirm: () => {} });
+        openModal({ title: 'EMAIL SENT', text: 'Check your inbox for a reset link.', color: 'green' });
     } catch (e) {
-        openModal({ title: 'ERROR', text: e.message, onConfirm: () => {} });
+        openModal({ title: 'ERROR', text: e.message });
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// CONNECTION STATUS
+// ─────────────────────────────────────────────────────────────────────────────
 db.ref('.info/connected').on('value', s => {
     const online = s.val() === true;
-    document.getElementById('conn-pill').className = 'conn-pill' + (online ? ' online' : '');
-    document.getElementById('conn-text').textContent = online ? 'ONLINE' : 'OFFLINE';
+    document.getElementById('conn-pill').className    = 'conn-pill' + (online ? ' online' : '');
+    document.getElementById('conn-text').textContent  = online ? 'ONLINE' : 'OFFLINE';
 });
 </script>
+```
 
 </body>
 </html>
