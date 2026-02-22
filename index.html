@@ -10,7 +10,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
-        /* ── TOKENS ── */
         :root {
             --green:   #00ff41;
             --green-dim: #00a828;
@@ -26,7 +25,6 @@
         }
 
 ```
-    /* ── RESET ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
         background: var(--bg);
@@ -36,7 +34,6 @@
         overflow-x: hidden;
     }
 
-    /* ── SCANLINES OVERLAY ── */
     body::after {
         content: '';
         position: fixed;
@@ -52,7 +49,6 @@
         z-index: 9999;
     }
 
-    /* ── SCREENS ── */
     .screen {
         display: none;
         position: fixed;
@@ -65,7 +61,6 @@
     }
     .screen.active { display: flex; }
 
-    /* ── AUTH ── */
     .auth-card {
         width: 88%;
         max-width: 360px;
@@ -164,7 +159,6 @@
         text-decoration: underline;
     }
 
-    /* ── GAME SCREEN ── */
     #game-screen {
         display: none;
         flex-direction: column;
@@ -176,7 +170,6 @@
         padding-bottom: 40px;
     }
 
-    /* ── TOP BAR ── */
     .topbar {
         position: fixed;
         top: 0;
@@ -230,7 +223,6 @@
         padding: 0;
     }
 
-    /* ── PLAYER HERO ── */
     .player-section {
         width: 100%;
         padding: 28px 24px 20px;
@@ -256,16 +248,16 @@
     }
     .edit-btn {
         color: var(--gray);
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         cursor: pointer;
         background: none;
         border: none;
         padding: 0;
         transition: color 0.2s;
+        font-family: var(--mono);
     }
     .edit-btn:hover { color: var(--green); }
 
-    /* ── SCORE DISPLAY ── */
     .score-section {
         width: 100%;
         padding: 24px;
@@ -301,19 +293,17 @@
         color: var(--green);
         line-height: 1;
         text-shadow: 0 0 40px rgba(0,255,65,0.3);
-        cursor: pointer;
         transition: all 0.2s;
         z-index: 1;
         user-select: none;
+        pointer-events: none;
     }
     .score-value.cooldown {
         color: var(--gray);
         text-shadow: none;
         transform: scale(0.96);
     }
-    .score-value:active { transform: scale(0.94); }
 
-    /* ── LEADERBOARD ── */
     .leaderboard-section {
         width: 100%;
         padding: 0 16px;
@@ -372,7 +362,6 @@
         color: #222;
     }
 
-    /* ── MODAL ── */
     .modal-backdrop {
         display: none;
         position: fixed;
@@ -408,14 +397,27 @@
         letter-spacing: 0.5px;
     }
 
-    /* ── SCANNER (hidden focus trap) ── */
-    #scanner {
+    .scanner-debug {
         position: fixed;
-        left: -9999px;
-        top: 0;
-        width: 1px;
-        height: 1px;
-        opacity: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0,0,0,0.95);
+        color: var(--green);
+        padding: 10px;
+        font-size: 0.7rem;
+        border-top: 1px solid var(--green);
+        z-index: 300;
+    }
+
+    #scanner {
+        width: 100%;
+        background: #000;
+        border: 2px solid var(--green);
+        color: var(--green);
+        font-family: var(--mono);
+        padding: 8px;
+        font-size: 0.8rem;
     }
 </style>
 ```
@@ -423,8 +425,6 @@
 </head>
 <body>
 
-```
-<!-- ── MODAL ── -->
 <div id="modal" class="modal-backdrop">
     <div class="modal-card">
         <div id="modal-accent" class="modal-accent"></div>
@@ -436,11 +436,10 @@
     </div>
 </div>
 
-<!-- ── AUTH SCREEN ── -->
 <div id="auth-screen" class="screen active">
     <div class="auth-card">
         <div class="auth-title">ZEBRA TAG</div>
-        <div class="auth-sub">FIELD SCORING SYSTEM · V0.3</div>
+        <div class="auth-sub">FIELD SCORING SYSTEM</div>
         <div id="reg-fields" style="display:none">
             <input class="field" type="text" id="username-input" placeholder="DISPLAY NAME">
         </div>
@@ -452,7 +451,6 @@
     </div>
 </div>
 
-<!-- ── GAME SCREEN ── -->
 <div id="game-screen">
     <div class="topbar">
         <div class="topbar-brand">ZEBRA TAG</div>
@@ -465,72 +463,64 @@
         </div>
     </div>
 
-    <div class="player-section">
-        <div class="player-label">OPERATOR</div>
-        <div class="player-name-row">
-            <div class="player-name" id="op-name">LOADING</div>
-            <button class="edit-btn" onclick="promptNameChange()">✎</button>
-        </div>
-    </div>
-
-    <div class="score-section">
-        <div class="score-bg-text" id="score-bg">0</div>
-        <div class="score-label">TOTAL POINTS</div>
-        <div class="score-value" id="my-count" onclick="iScored()">0</div>
-    </div>
-
-    <div class="leaderboard-section">
-        <div class="lb-header">GLOBAL LEADERBOARD</div>
-        <div id="leaderboard-content">
-            <div class="lb-empty">NO DATA</div>
-        </div>
-        <button id="admin-wipe" class="btn btn-danger" onclick="wipeAllData()">⚠ ERASE ENTIRE BOARD</button>
+```
+<div class="player-section">
+    <div class="player-label">OPERATOR</div>
+    <div class="player-name-row">
+        <div class="player-name" id="op-name">LOADING</div>
+        <button class="edit-btn" onclick="promptNameChange()">EDIT</button>
     </div>
 </div>
 
-<!-- Hidden scanner input: receives DataWedge keystrokes -->
-<input type="text" id="scanner" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+<div class="score-section">
+    <div class="score-bg-text" id="score-bg">0</div>
+    <div class="score-label">TOTAL POINTS</div>
+    <div class="score-value" id="my-count">0</div>
+</div>
+
+<div class="leaderboard-section">
+    <div class="lb-header">GLOBAL LEADERBOARD</div>
+    <div id="leaderboard-content">
+        <div class="lb-empty">NO DATA</div>
+    </div>
+    <button id="admin-wipe" class="btn btn-danger" onclick="wipeAllData()">ERASE ENTIRE BOARD</button>
+</div>
+
+<div class="scanner-debug">
+    SCANNER INPUT (VISIBLE FOR TESTING):<br>
+    <input type="text" id="scanner" autocomplete="off" placeholder="Scan appears here...">
+    <div id="scan-log" style="margin-top:5px; font-size:0.65rem;">Waiting for scan...</div>
+</div>
+```
+
+</div>
 
 <script>
-// ─────────────────────────────────────────────────────────────────────────────
-// CONFIG
-// ─────────────────────────────────────────────────────────────────────────────
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyDFIuHkzGlTNn20-2hVyQUwaKXyqZ9kPRc",
     projectId: "zebratagpro",
     databaseURL: "https://zebratagpro-default-rtdb.firebaseio.com/"
 };
-const ADMIN_UIDS      = ["ssrP3E1JuvgvREJSP2mDEcggkeW2"];
-const RESET_TAG       = "SHPRR01";
-const SCAN_PREFIX     = "SHPMD01";
-const COOLDOWN_MS     = 1000;
-const SCAN_DEBOUNCE_MS = 100;
+const ADMIN_UIDS = ["ssrP3E1JuvgvREJSP2mDEcggkeW2"];
+const RESET_TAG = "SHPRR01";
+const SCAN_DEBOUNCE_MS = 150;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FIREBASE
-// ─────────────────────────────────────────────────────────────────────────────
 firebase.initializeApp(FIREBASE_CONFIG);
-const db   = firebase.database();
+const db = firebase.database();
 const auth = firebase.auth();
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────────────────────────────────────────
-let nameMap    = {};
+let nameMap = {};
 let lastScores = null;
-let canScan    = true;
+let canScan = true;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MODAL
-// ─────────────────────────────────────────────────────────────────────────────
 function openModal({ title, text, onConfirm, color = 'red', showInput = false }) {
     const isGreen = color === 'green';
-    document.getElementById('modal-title').textContent  = title;
-    document.getElementById('modal-title').style.color  = isGreen ? 'var(--green)' : 'var(--red)';
-    document.getElementById('modal-accent').className   = 'modal-accent' + (isGreen ? ' green' : '');
-    document.getElementById('modal-text').textContent   = text;
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-title').style.color = isGreen ? 'var(--green)' : 'var(--red)';
+    document.getElementById('modal-accent').className = 'modal-accent' + (isGreen ? ' green' : '');
+    document.getElementById('modal-text').textContent = text;
     document.getElementById('modal-input-wrap').innerHTML = showInput
-        ? `<input class="field" type="text" id="modal-field" placeholder="NEW NAME" style="margin-bottom:16px">`
+        ? '<input class="field" type="text" id="modal-field" placeholder="NEW NAME" style="margin-bottom:16px">'
         : '';
     document.getElementById('modal').classList.add('open');
     document.getElementById('modal-confirm').onclick = () => {
@@ -544,145 +534,120 @@ function closeModal() {
     document.getElementById('modal').classList.remove('open');
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// LEADERBOARD
-// ─────────────────────────────────────────────────────────────────────────────
 function renderLeaderboard() {
     const user = auth.currentUser;
     if (!user) return;
-
     const scoreEl = document.getElementById('my-count');
-    const bgEl    = document.getElementById('score-bg');
-    const board   = document.getElementById('leaderboard-content');
-
+    const bgEl = document.getElementById('score-bg');
+    const board = document.getElementById('leaderboard-content');
     if (!lastScores?.exists()) {
         scoreEl.textContent = '0';
-        bgEl.textContent    = '0';
-        board.innerHTML     = '<div class="lb-empty">NO DATA</div>';
+        bgEl.textContent = '0';
+        board.innerHTML = '<div class="lb-empty">NO DATA</div>';
         return;
     }
-
-    const scores  = lastScores.val();
+    const scores = lastScores.val();
     const myScore = scores[user.uid] ?? 0;
     scoreEl.textContent = myScore;
-    bgEl.textContent    = myScore;
-
+    bgEl.textContent = myScore;
     const sorted = Object.entries(scores).sort(([,a],[,b]) => b - a);
-    board.innerHTML = sorted.map(([uid, score], i) => `
-        <div class="lb-row ${uid === user.uid ? 'me' : ''}">
-            <span class="lb-rank ${i < 3 ? 'top' : ''}">${String(i + 1).padStart(2, '0')}</span>
-            <span class="lb-name">${nameMap[uid] ?? 'OPERATOR'}</span>
-            <span class="lb-score">${score}</span>
-        </div>
-    `).join('');
+    board.innerHTML = sorted.map(([uid, score], i) => {
+        return '<div class="lb-row ' + (uid === user.uid ? 'me' : '') + '">' +
+            '<span class="lb-rank ' + (i < 3 ? 'top' : '') + '">' + String(i + 1).padStart(2, '0') + '</span>' +
+            '<span class="lb-name">' + (nameMap[uid] ?? 'OPERATOR') + '</span>' +
+            '<span class="lb-score">' + score + '</span>' +
+            '</div>';
+    }).join('');
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SCORE / RESET
-// ─────────────────────────────────────────────────────────────────────────────
 function iScored() {
-    if (!canScan || !auth.currentUser) return;
+    if (!canScan || !auth.currentUser) {
+        document.getElementById('scan-log').textContent = 'Cannot score (cooldown or not logged in)';
+        return;
+    }
     canScan = false;
     document.getElementById('my-count').classList.add('cooldown');
-    db.ref(`global_scores/${auth.currentUser.uid}`).transaction(v => (v || 0) + 1);
+    document.getElementById('scan-log').textContent = 'SCORE +1!';
+    db.ref('global_scores/' + auth.currentUser.uid).transaction(v => (v || 0) + 1);
     setTimeout(() => {
         canScan = true;
         document.getElementById('my-count').classList.remove('cooldown');
-    }, COOLDOWN_MS);
+    }, 1000);
 }
 
 function triggerHardReset() {
     lastScores = null;
     renderLeaderboard();
     db.ref('global_scores').set(null)
-        .catch(e => openModal({ title: 'ERROR', text: e.message }));
+        .catch(e => openModal({ title: 'ERROR', text: e.message, onConfirm: () => {} }));
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SCANNER
-// Handles all DataWedge keystroke output modes:
-//   • No suffix    → input event + 100ms debounce
-//   • Enter suffix → keydown Enter
-//   • Tab suffix   → keydown Tab (focus steal prevented)
-// ─────────────────────────────────────────────────────────────────────────────
+function confirmReset() {
+    openModal({
+        title: 'RESET DETECTED',
+        text: 'SHPRR01 scanned. This will erase ALL scores. Confirm to proceed.',
+        onConfirm: () => triggerHardReset()
+    });
+}
+
 const scannerEl = document.getElementById('scanner');
-let scanBuffer  = '';
-let scanTimer   = null;
+let scanTimer = null;
 
 function processScan(raw) {
     const val = raw.toUpperCase().trim();
-    if (!val) return;
-    if (val === RESET_TAG)               triggerHardReset();
-    else if (val.startsWith(SCAN_PREFIX)) iScored();
+    document.getElementById('scan-log').textContent = 'Scanned: "' + val + '"';
+    
+    if (!val) {
+        document.getElementById('scan-log').textContent = 'Empty scan';
+        return;
+    }
+    
+    if (val === RESET_TAG) {
+        document.getElementById('scan-log').textContent = 'RESET TAG!';
+        confirmReset();
+    } else if (val.includes('SHP') && val.includes('MD')) {
+        document.getElementById('scan-log').textContent = 'SCORE TAG!';
+        iScored();
+    } else {
+        document.getElementById('scan-log').textContent = 'Unknown: ' + val;
+    }
 }
 
 function flushScan() {
-    processScan(scannerEl.value);
+    const value = scannerEl.value.trim();
+    if (value) processScan(value);
     scannerEl.value = '';
-    scanBuffer = '';
 }
 
 scannerEl.addEventListener('input', () => {
-    scanBuffer = scannerEl.value;
     clearTimeout(scanTimer);
     scanTimer = setTimeout(flushScan, SCAN_DEBOUNCE_MS);
 });
 
 scannerEl.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === 'Tab') {
-        if (e.key === 'Tab') e.preventDefault();
+        e.preventDefault();
         clearTimeout(scanTimer);
         flushScan();
     }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FOCUS MANAGEMENT
-// Keeps the hidden scanner input focused to capture all DataWedge keystrokes.
-// Backs off only when the user is intentionally typing in a visible input.
-// ─────────────────────────────────────────────────────────────────────────────
-function forceScannerFocus() {
-    const modalOpen  = document.getElementById('modal').classList.contains('open');
-    const authActive = document.getElementById('auth-screen').classList.contains('active');
-    const active     = document.activeElement;
-    const userTyping = active && active !== scannerEl && active.tagName === 'INPUT';
-    if (!modalOpen && !authActive && !userTyping) scannerEl.focus();
-}
-
-setInterval(forceScannerFocus, 300);
-scannerEl.addEventListener('blur', () => setTimeout(forceScannerFocus, 200));
-document.addEventListener('touchend', e => {
-    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON')
-        setTimeout(forceScannerFocus, 150);
-});
-document.addEventListener('click', e => {
-    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON')
-        setTimeout(forceScannerFocus, 150);
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// AUTH
-// ─────────────────────────────────────────────────────────────────────────────
 auth.onAuthStateChanged(user => {
     if (user) {
-        db.ref(`users/${user.uid}`).get().then(snap => {
+        db.ref('users/' + user.uid).get().then(snap => {
             document.getElementById('op-name').textContent = snap.val()?.name ?? 'OPERATOR';
             document.getElementById('admin-wipe').style.display = ADMIN_UIDS.includes(user.uid) ? 'block' : 'none';
             document.getElementById('auth-screen').classList.remove('active');
             document.getElementById('game-screen').style.display = 'flex';
-
             db.ref('users').on('value', s => {
                 nameMap = {};
                 s.forEach(c => { nameMap[c.key] = c.val()?.name; });
                 renderLeaderboard();
             });
-
             db.ref('global_scores').on('value', s => {
                 lastScores = s;
                 renderLeaderboard();
             });
-
-            forceScannerFocus();
         });
     } else {
         document.getElementById('game-screen').style.display = 'none';
@@ -692,29 +657,35 @@ auth.onAuthStateChanged(user => {
 
 async function handleAuth() {
     const email = document.getElementById('email-input').value.trim();
-    const pass  = document.getElementById('pass-input').value;
+    const pass = document.getElementById('pass-input').value;
     const isReg = document.getElementById('reg-fields').style.display !== 'none';
+    if (!email || !pass) {
+        openModal({ title: 'ERROR', text: 'Please enter email and password.', onConfirm: () => {} });
+        return;
+    }
     try {
         if (isReg) {
             const name = document.getElementById('username-input').value.trim().toUpperCase() || 'OPERATOR';
-            const res  = await auth.createUserWithEmailAndPassword(email, pass);
-            await db.ref(`users/${res.user.uid}`).set({ name });
+            const res = await auth.createUserWithEmailAndPassword(email, pass);
+            await db.ref('users/' + res.user.uid).set({ name });
         } else {
             await auth.signInWithEmailAndPassword(email, pass);
         }
     } catch (e) {
-        openModal({ title: 'ERROR', text: e.message });
+        openModal({ title: 'ERROR', text: e.message, onConfirm: () => {} });
     }
 }
 
 function toggleAuth() {
     const toRegister = document.getElementById('reg-fields').style.display === 'none';
     document.getElementById('reg-fields').style.display = toRegister ? 'block' : 'none';
-    document.getElementById('toggle-text').textContent  = toRegister ? 'LOGIN' : 'REGISTER';
-    document.getElementById('auth-btn').textContent     = toRegister ? 'REGISTER' : 'LOGIN';
+    document.getElementById('toggle-text').textContent = toRegister ? 'LOGIN' : 'REGISTER';
+    document.getElementById('auth-btn').textContent = toRegister ? 'REGISTER' : 'LOGIN';
 }
 
-function handleSignOut() { auth.signOut().then(() => location.reload()); }
+function handleSignOut() {
+    auth.signOut().then(() => location.reload());
+}
 
 function wipeAllData() {
     openModal({
@@ -733,7 +704,7 @@ function promptNameChange() {
         onConfirm: val => {
             if (!val?.trim()) return;
             const name = val.trim().toUpperCase();
-            db.ref(`users/${auth.currentUser.uid}/name`).set(name);
+            db.ref('users/' + auth.currentUser.uid + '/name').set(name);
             document.getElementById('op-name').textContent = name;
             nameMap[auth.currentUser.uid] = name;
             renderLeaderboard();
@@ -743,25 +714,24 @@ function promptNameChange() {
 
 async function handleForgotPassword() {
     const email = document.getElementById('email-input').value.trim();
-    if (!email) return openModal({ title: 'REQUIRED', text: 'Enter your email address first.', color: 'green' });
+    if (!email) {
+        openModal({ title: 'REQUIRED', text: 'Enter your email address first.', color: 'green', onConfirm: () => {} });
+        return;
+    }
     try {
         await auth.sendPasswordResetEmail(email);
-        openModal({ title: 'EMAIL SENT', text: 'Check your inbox for a reset link.', color: 'green' });
+        openModal({ title: 'EMAIL SENT', text: 'Check your inbox for a reset link.', color: 'green', onConfirm: () => {} });
     } catch (e) {
-        openModal({ title: 'ERROR', text: e.message });
+        openModal({ title: 'ERROR', text: e.message, onConfirm: () => {} });
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONNECTION STATUS
-// ─────────────────────────────────────────────────────────────────────────────
 db.ref('.info/connected').on('value', s => {
     const online = s.val() === true;
-    document.getElementById('conn-pill').className    = 'conn-pill' + (online ? ' online' : '');
-    document.getElementById('conn-text').textContent  = online ? 'ONLINE' : 'OFFLINE';
+    document.getElementById('conn-pill').className = 'conn-pill' + (online ? ' online' : '');
+    document.getElementById('conn-text').textContent = online ? 'ONLINE' : 'OFFLINE';
 });
 </script>
-```
 
 </body>
 </html>
