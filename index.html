@@ -4,496 +4,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZEBRA TAG</title>
+    <title>ZEBRA TAG - Intent Test</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
-        :root {
-            --green:   #00ff41;
-            --green-dim: #00a828;
-            --bg:      #050505;
-            --surface: #0d0d0d;
-            --border:  #1c1c1c;
-            --red:     #ff3c3c;
-            --amber:   #ffaa00;
-            --gray:    #444;
-            --text:    #e0e0e0;
-            --mono:    'Share Tech Mono', monospace;
-            --display: 'Barlow Condensed', sans-serif;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #050505;
+            color: #00ff41;
+            font-family: 'Share Tech Mono', monospace;
+            padding: 20px;
         }
-
-```
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-        background: var(--bg);
-        color: var(--text);
-        font-family: var(--mono);
-        min-height: 100vh;
-        overflow-x: hidden;
-    }
-
-    body::after {
-        content: '';
-        position: fixed;
-        inset: 0;
-        background: repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 2px,
-            rgba(0,0,0,0.07) 2px,
-            rgba(0,0,0,0.07) 4px
-        );
-        pointer-events: none;
-        z-index: 9999;
-    }
-
-    .screen {
-        display: none;
-        position: fixed;
-        inset: 0;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 100;
-        background: var(--bg);
-    }
-    .screen.active { display: flex; }
-
-    .auth-card {
-        width: 88%;
-        max-width: 360px;
-        border: 1px solid var(--green-dim);
-        background: var(--surface);
-        padding: 36px 28px;
-        position: relative;
-    }
-    .auth-card::before {
-        content: '';
-        position: absolute;
-        top: -1px; left: -1px; right: -1px;
-        height: 3px;
-        background: var(--green);
-    }
-    .auth-title {
-        font-family: var(--display);
-        font-size: 2rem;
-        font-weight: 900;
-        letter-spacing: 6px;
-        color: var(--green);
-        text-align: center;
-        margin-bottom: 6px;
-    }
-    .auth-sub {
-        font-size: 0.65rem;
-        color: var(--gray);
-        text-align: center;
-        letter-spacing: 3px;
-        margin-bottom: 28px;
-    }
-    .field {
-        width: 100%;
-        background: #000;
-        border: 1px solid var(--border);
-        border-left: 3px solid var(--green-dim);
-        color: var(--green);
-        font-family: var(--mono);
-        font-size: 0.85rem;
-        padding: 14px 16px;
-        margin-bottom: 10px;
-        outline: none;
-        transition: border-color 0.2s;
-        letter-spacing: 1px;
-    }
-    .field:focus { border-color: var(--green); }
-    .field::placeholder { color: #333; }
-    .btn {
-        width: 100%;
-        padding: 16px;
-        font-family: var(--display);
-        font-size: 1rem;
-        font-weight: 900;
-        letter-spacing: 4px;
-        text-transform: uppercase;
-        border: none;
-        cursor: pointer;
-        transition: all 0.15s;
-    }
-    .btn-primary {
-        background: var(--green);
-        color: #000;
-    }
-    .btn-primary:active { opacity: 0.8; transform: scale(0.99); }
-    .btn-ghost {
-        background: transparent;
-        color: var(--gray);
-        border: 1px solid var(--border);
-        margin-top: 8px;
-        font-size: 0.75rem;
-    }
-    .btn-danger {
-        background: transparent;
-        color: var(--red);
-        border: 1px solid #2a0000;
-        margin-top: 32px;
-        font-size: 0.75rem;
-        display: none;
-    }
-    .auth-link {
-        font-size: 0.7rem;
-        color: var(--gray);
-        text-align: center;
-        margin-top: 18px;
-        cursor: pointer;
-        letter-spacing: 2px;
-    }
-    .auth-link span { color: var(--green); }
-    .auth-link-sm {
-        font-size: 0.65rem;
-        color: #2a2a2a;
-        text-align: center;
-        margin-top: 10px;
-        cursor: pointer;
-        letter-spacing: 1px;
-        text-decoration: underline;
-    }
-
-    #game-screen {
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        max-width: 500px;
-        margin: 0 auto;
-        padding-top: 72px;
-        padding-bottom: 40px;
-    }
-
-    .topbar {
-        position: fixed;
-        top: 0;
-        left: 0; right: 0;
-        height: 56px;
-        background: var(--surface);
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 20px;
-        z-index: 200;
-    }
-    .topbar-brand {
-        font-family: var(--display);
-        font-weight: 900;
-        font-size: 1.1rem;
-        letter-spacing: 5px;
-        color: var(--green);
-    }
-    .topbar-right { display: flex; align-items: center; gap: 16px; }
-    .conn-pill {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.6rem;
-        letter-spacing: 2px;
-        color: var(--gray);
-    }
-    .conn-dot {
-        width: 7px; height: 7px;
-        border-radius: 50%;
-        background: var(--gray);
-        transition: background 0.3s;
-    }
-    .conn-pill.online .conn-dot {
-        background: var(--green);
-        box-shadow: 0 0 8px var(--green);
-        animation: pulse 2s infinite;
-    }
-    .conn-pill.online { color: var(--green-dim); }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-    .logout-btn {
-        font-family: var(--mono);
-        font-size: 0.65rem;
-        letter-spacing: 2px;
-        color: var(--red);
-        cursor: pointer;
-        background: none;
-        border: none;
-        padding: 0;
-    }
-
-    .player-section {
-        width: 100%;
-        padding: 28px 24px 20px;
-        border-bottom: 1px solid var(--border);
-    }
-    .player-label {
-        font-size: 0.6rem;
-        letter-spacing: 3px;
-        color: var(--gray);
-        margin-bottom: 4px;
-    }
-    .player-name-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .player-name {
-        font-family: var(--display);
-        font-size: 1.6rem;
-        font-weight: 900;
-        letter-spacing: 3px;
-        color: var(--text);
-    }
-    .edit-btn {
-        color: var(--gray);
-        font-size: 0.7rem;
-        cursor: pointer;
-        background: none;
-        border: none;
-        padding: 0;
-        transition: color 0.2s;
-        font-family: var(--mono);
-    }
-    .edit-btn:hover { color: var(--green); }
-
-    .score-section {
-        width: 100%;
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        border-bottom: 1px solid var(--border);
-        position: relative;
-        overflow: hidden;
-    }
-    .score-bg-text {
-        position: absolute;
-        font-family: var(--display);
-        font-size: 14rem;
-        font-weight: 900;
-        color: rgba(0,255,65,0.03);
-        pointer-events: none;
-        user-select: none;
-        letter-spacing: -10px;
-        line-height: 1;
-    }
-    .score-label {
-        font-size: 0.6rem;
-        letter-spacing: 4px;
-        color: var(--gray);
-        margin-bottom: 8px;
-        z-index: 1;
-    }
-    .score-value {
-        font-family: var(--display);
-        font-size: 9rem;
-        font-weight: 900;
-        color: var(--green);
-        line-height: 1;
-        text-shadow: 0 0 40px rgba(0,255,65,0.3);
-        transition: all 0.2s;
-        z-index: 1;
-        user-select: none;
-        pointer-events: none;
-    }
-    .score-value.cooldown {
-        color: var(--gray);
-        text-shadow: none;
-        transform: scale(0.96);
-    }
-
-    .leaderboard-section {
-        width: 100%;
-        padding: 0 16px;
-        margin-top: 20px;
-    }
-    .lb-header {
-        font-size: 0.6rem;
-        letter-spacing: 4px;
-        color: var(--gray);
-        padding: 0 8px;
-        margin-bottom: 12px;
-    }
-    .lb-row {
-        display: flex;
-        align-items: center;
-        padding: 14px 16px;
-        margin-bottom: 6px;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-left: 3px solid transparent;
-        transition: all 0.2s;
-    }
-    .lb-row.me {
-        border-left-color: var(--green);
-        background: #0a1a0a;
-    }
-    .lb-rank {
-        font-size: 0.65rem;
-        color: var(--gray);
-        width: 28px;
-        flex-shrink: 0;
-    }
-    .lb-rank.top { color: var(--amber); }
-    .lb-name {
-        flex: 1;
-        font-family: var(--display);
-        font-size: 1rem;
-        font-weight: 700;
-        letter-spacing: 2px;
-        color: var(--text);
-    }
-    .lb-row.me .lb-name { color: var(--green); }
-    .lb-score {
-        font-family: var(--display);
-        font-size: 1.3rem;
-        font-weight: 900;
-        color: var(--text);
-        letter-spacing: 1px;
-    }
-    .lb-row.me .lb-score { color: var(--green); }
-    .lb-empty {
-        text-align: center;
-        padding: 40px;
-        font-size: 0.7rem;
-        letter-spacing: 3px;
-        color: #222;
-    }
-
-    .modal-backdrop {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.92);
-        z-index: 500;
-        align-items: center;
-        justify-content: center;
-    }
-    .modal-backdrop.open { display: flex; }
-    .modal-card {
-        width: 82%;
-        max-width: 300px;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        padding: 28px 24px;
-        position: relative;
-    }
-    .modal-accent { height: 3px; position: absolute; top: 0; left: 0; right: 0; background: var(--red); }
-    .modal-accent.green { background: var(--green); }
-    .modal-title {
-        font-family: var(--display);
-        font-size: 1.1rem;
-        font-weight: 900;
-        letter-spacing: 4px;
-        margin-bottom: 12px;
-    }
-    .modal-text {
-        font-size: 0.75rem;
-        color: #888;
-        line-height: 1.6;
-        margin-bottom: 20px;
-        letter-spacing: 0.5px;
-    }
-
-    .scanner-debug {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(0,0,0,0.95);
-        color: var(--green);
-        padding: 10px;
-        font-size: 0.7rem;
-        border-top: 1px solid var(--green);
-        z-index: 300;
-    }
-
-    #scanner {
-        width: 100%;
-        background: #000;
-        border: 2px solid var(--green);
-        color: var(--green);
-        font-family: var(--mono);
-        padding: 8px;
-        font-size: 0.8rem;
-    }
-</style>
-```
-
+        .status {
+            background: #0d0d0d;
+            border: 1px solid #00ff41;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .status h2 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        .status p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+        .btn {
+            background: #00ff41;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            font-size: 1rem;
+        }
+        .log {
+            background: #000;
+            border: 1px solid #00ff41;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #00ff41;
+            padding-left: 10px;
+        }
+        .error { color: #ff3c3c; border-left-color: #ff3c3c; }
+        .success { color: #00ff41; }
+        input {
+            width: 100%;
+            background: #000;
+            border: 2px solid #00ff41;
+            color: #00ff41;
+            padding: 10px;
+            font-family: inherit;
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
 
-<div id="modal" class="modal-backdrop">
-    <div class="modal-card">
-        <div id="modal-accent" class="modal-accent"></div>
-        <div id="modal-title" class="modal-title">CONFIRM</div>
-        <div id="modal-input-wrap"></div>
-        <p id="modal-text" class="modal-text"></p>
-        <button class="btn btn-primary" id="modal-confirm">PROCEED</button>
-        <button class="btn btn-ghost" onclick="closeModal()">CANCEL</button>
-    </div>
+<div class="status">
+    <h2>ZEBRA DATAWEDGE TEST</h2>
+    <p>Scanner Method: <span id="method">Checking...</span></p>
+    <p>Last Scan: <span id="last-scan">None</span></p>
+    <p>Scan Count: <span id="scan-count">0</span></p>
 </div>
 
-<div id="auth-screen" class="screen active">
-    <div class="auth-card">
-        <div class="auth-title">ZEBRA TAG</div>
-        <div class="auth-sub">FIELD SCORING SYSTEM</div>
-        <div id="reg-fields" style="display:none">
-            <input class="field" type="text" id="username-input" placeholder="DISPLAY NAME">
-        </div>
-        <input class="field" type="email" id="email-input" placeholder="EMAIL ADDRESS">
-        <input class="field" type="password" id="pass-input" placeholder="PASSWORD">
-        <button class="btn btn-primary" onclick="handleAuth()" id="auth-btn">LOGIN</button>
-        <p class="auth-link" onclick="toggleAuth()">SWITCH TO <span id="toggle-text">REGISTER</span></p>
-        <p class="auth-link-sm" onclick="handleForgotPassword()">FORGOT PASSWORD?</p>
-    </div>
+<div class="status">
+    <h2>MANUAL ENTRY (for testing)</h2>
+    <input type="text" id="manual-input" placeholder="Type SHPMD01 or SHPRR01 then press Enter">
 </div>
 
-<div id="game-screen">
-    <div class="topbar">
-        <div class="topbar-brand">ZEBRA TAG</div>
-        <div class="topbar-right">
-            <div class="conn-pill" id="conn-pill">
-                <div class="conn-dot"></div>
-                <span id="conn-text">OFFLINE</span>
-            </div>
-            <button class="logout-btn" onclick="handleSignOut()">LOGOUT</button>
-        </div>
-    </div>
+<button class="btn" onclick="testKeystroke()">Test Keystroke Mode</button>
+<button class="btn" onclick="testIntent()">Test Intent Mode</button>
+<button class="btn" onclick="clearLog()">Clear Log</button>
 
-```
-<div class="player-section">
-    <div class="player-label">OPERATOR</div>
-    <div class="player-name-row">
-        <div class="player-name" id="op-name">LOADING</div>
-        <button class="edit-btn" onclick="promptNameChange()">EDIT</button>
-    </div>
-</div>
+<div class="log" id="log"></div>
 
-<div class="score-section">
-    <div class="score-bg-text" id="score-bg">0</div>
-    <div class="score-label">TOTAL POINTS</div>
-    <div class="score-value" id="my-count">0</div>
-</div>
+<!-- Hidden scanner for keystroke mode -->
 
-<div class="leaderboard-section">
-    <div class="lb-header">GLOBAL LEADERBOARD</div>
-    <div id="leaderboard-content">
-        <div class="lb-empty">NO DATA</div>
-    </div>
-    <button id="admin-wipe" class="btn btn-danger" onclick="wipeAllData()">ERASE ENTIRE BOARD</button>
-</div>
-
-<div class="scanner-debug">
-    SCANNER INPUT (VISIBLE FOR TESTING):<br>
-    <input type="text" id="scanner" autocomplete="off" placeholder="Scan appears here...">
-    <div id="scan-log" style="margin-top:5px; font-size:0.65rem;">Waiting for scan...</div>
-</div>
-```
-
-</div>
+<input type="text" id="scanner" style="position:absolute;left:-9999px;" autocomplete="off">
 
 <script>
 const FIREBASE_CONFIG = {
@@ -501,237 +101,148 @@ const FIREBASE_CONFIG = {
     projectId: "zebratagpro",
     databaseURL: "https://zebratagpro-default-rtdb.firebaseio.com/"
 };
-const ADMIN_UIDS = ["ssrP3E1JuvgvREJSP2mDEcggkeW2"];
 const RESET_TAG = "SHPRR01";
-const SCAN_DEBOUNCE_MS = 150;
+const SCORE_TAG = "SHPMD01";
 
 firebase.initializeApp(FIREBASE_CONFIG);
 const db = firebase.database();
 const auth = firebase.auth();
 
-let nameMap = {};
-let lastScores = null;
-let canScan = true;
+// Sign in anonymously for testing
+auth.signInAnonymously();
 
-function openModal({ title, text, onConfirm, color = 'red', showInput = false }) {
-    const isGreen = color === 'green';
-    document.getElementById('modal-title').textContent = title;
-    document.getElementById('modal-title').style.color = isGreen ? 'var(--green)' : 'var(--red)';
-    document.getElementById('modal-accent').className = 'modal-accent' + (isGreen ? ' green' : '');
-    document.getElementById('modal-text').textContent = text;
-    document.getElementById('modal-input-wrap').innerHTML = showInput
-        ? '<input class="field" type="text" id="modal-field" placeholder="NEW NAME" style="margin-bottom:16px">'
-        : '';
-    document.getElementById('modal').classList.add('open');
-    document.getElementById('modal-confirm').onclick = () => {
-        const val = showInput ? document.getElementById('modal-field')?.value : null;
-        onConfirm(val);
-        closeModal();
-    };
+let scanCount = 0;
+let testingKeystroke = false;
+let testingIntent = false;
+
+function log(msg, isError = false) {
+    const logDiv = document.getElementById('log');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry ' + (isError ? 'error' : 'success');
+    const time = new Date().toLocaleTimeString();
+    entry.textContent = `[${time}] ${msg}`;
+    logDiv.insertBefore(entry, logDiv.firstChild);
+    console.log(msg);
 }
 
-function closeModal() {
-    document.getElementById('modal').classList.remove('open');
+function clearLog() {
+    document.getElementById('log').innerHTML = '';
 }
 
-function renderLeaderboard() {
-    const user = auth.currentUser;
-    if (!user) return;
-    const scoreEl = document.getElementById('my-count');
-    const bgEl = document.getElementById('score-bg');
-    const board = document.getElementById('leaderboard-content');
-    if (!lastScores?.exists()) {
-        scoreEl.textContent = '0';
-        bgEl.textContent = '0';
-        board.innerHTML = '<div class="lb-empty">NO DATA</div>';
-        return;
+function processScan(data) {
+    scanCount++;
+    document.getElementById('scan-count').textContent = scanCount;
+    document.getElementById('last-scan').textContent = data;
+    
+    log('Scan received: ' + data);
+    
+    const val = data.toUpperCase().trim();
+    
+    if (val === RESET_TAG) {
+        log('RESET TAG detected!');
+        alert('RESET TAG: ' + val);
+    } else if (val.includes('SHP') && val.includes('MD')) {
+        log('SCORE TAG detected!');
+        alert('SCORE TAG: ' + val);
+    } else {
+        log('Unknown tag: ' + val, true);
     }
-    const scores = lastScores.val();
-    const myScore = scores[user.uid] ?? 0;
-    scoreEl.textContent = myScore;
-    bgEl.textContent = myScore;
-    const sorted = Object.entries(scores).sort(([,a],[,b]) => b - a);
-    board.innerHTML = sorted.map(([uid, score], i) => {
-        return '<div class="lb-row ' + (uid === user.uid ? 'me' : '') + '">' +
-            '<span class="lb-rank ' + (i < 3 ? 'top' : '') + '">' + String(i + 1).padStart(2, '0') + '</span>' +
-            '<span class="lb-name">' + (nameMap[uid] ?? 'OPERATOR') + '</span>' +
-            '<span class="lb-score">' + score + '</span>' +
-            '</div>';
-    }).join('');
 }
 
-function iScored() {
-    if (!canScan || !auth.currentUser) {
-        document.getElementById('scan-log').textContent = 'Cannot score (cooldown or not logged in)';
-        return;
-    }
-    canScan = false;
-    document.getElementById('my-count').classList.add('cooldown');
-    document.getElementById('scan-log').textContent = 'SCORE +1!';
-    db.ref('global_scores/' + auth.currentUser.uid).transaction(v => (v || 0) + 1);
-    setTimeout(() => {
-        canScan = true;
-        document.getElementById('my-count').classList.remove('cooldown');
-    }, 1000);
-}
-
-function triggerHardReset() {
-    lastScores = null;
-    renderLeaderboard();
-    db.ref('global_scores').set(null)
-        .catch(e => openModal({ title: 'ERROR', text: e.message, onConfirm: () => {} }));
-}
-
-function confirmReset() {
-    openModal({
-        title: 'RESET DETECTED',
-        text: 'SHPRR01 scanned. This will erase ALL scores. Confirm to proceed.',
-        onConfirm: () => triggerHardReset()
-    });
-}
-
+// ============================================
+// METHOD 1: KEYSTROKE (what we've been using)
+// ============================================
 const scannerEl = document.getElementById('scanner');
 let scanTimer = null;
 
-function processScan(raw) {
-    const val = raw.toUpperCase().trim();
-    document.getElementById('scan-log').textContent = 'Scanned: "' + val + '"';
-    
-    if (!val) {
-        document.getElementById('scan-log').textContent = 'Empty scan';
-        return;
-    }
-    
-    if (val === RESET_TAG) {
-        document.getElementById('scan-log').textContent = 'RESET TAG!';
-        confirmReset();
-    } else if (val.includes('SHP') && val.includes('MD')) {
-        document.getElementById('scan-log').textContent = 'SCORE TAG!';
-        iScored();
-    } else {
-        document.getElementById('scan-log').textContent = 'Unknown: ' + val;
-    }
-}
-
-function flushScan() {
+function flushKeystrokeScan() {
     const value = scannerEl.value.trim();
-    if (value) processScan(value);
+    if (value) {
+        log('Keystroke scan: ' + value);
+        processScan(value);
+    }
     scannerEl.value = '';
 }
 
 scannerEl.addEventListener('input', () => {
+    if (!testingKeystroke) return;
     clearTimeout(scanTimer);
-    scanTimer = setTimeout(flushScan, SCAN_DEBOUNCE_MS);
+    scanTimer = setTimeout(flushKeystrokeScan, 100);
 });
 
 scannerEl.addEventListener('keydown', e => {
+    if (!testingKeystroke) return;
     if (e.key === 'Enter' || e.key === 'Tab') {
         e.preventDefault();
         clearTimeout(scanTimer);
-        flushScan();
+        flushKeystrokeScan();
     }
 });
 
-auth.onAuthStateChanged(user => {
-    if (user) {
-        db.ref('users/' + user.uid).get().then(snap => {
-            document.getElementById('op-name').textContent = snap.val()?.name ?? 'OPERATOR';
-            document.getElementById('admin-wipe').style.display = ADMIN_UIDS.includes(user.uid) ? 'block' : 'none';
-            document.getElementById('auth-screen').classList.remove('active');
-            document.getElementById('game-screen').style.display = 'flex';
-            db.ref('users').on('value', s => {
-                nameMap = {};
-                s.forEach(c => { nameMap[c.key] = c.val()?.name; });
-                renderLeaderboard();
-            });
-            db.ref('global_scores').on('value', s => {
-                lastScores = s;
-                renderLeaderboard();
-            });
+function keepScannerFocused() {
+    if (testingKeystroke && document.activeElement !== scannerEl) {
+        scannerEl.focus();
+    }
+}
+
+function testKeystroke() {
+    testingKeystroke = true;
+    testingIntent = false;
+    document.getElementById('method').textContent = 'Keystroke Mode (Active)';
+    log('Keystroke mode activated - scanner input should now be focused');
+    setInterval(keepScannerFocused, 200);
+    scannerEl.focus();
+}
+
+// ============================================
+// METHOD 2: INTENT (alternative method)
+// ============================================
+function testIntent() {
+    testingIntent = true;
+    testingKeystroke = false;
+    document.getElementById('method').textContent = 'Intent Mode (Active)';
+    log('Intent mode activated - DataWedge should broadcast to this page');
+    
+    // Register for DataWedge intent broadcasts
+    if ('BarcodeScanner' in window) {
+        log('BarcodeScanner API detected!');
+        window.BarcodeScanner.on('scan', (data) => {
+            log('Intent scan received via BarcodeScanner API');
+            processScan(data.barcode || data.text || data);
         });
     } else {
-        document.getElementById('game-screen').style.display = 'none';
-        document.getElementById('auth-screen').classList.add('active');
+        log('BarcodeScanner API not found', true);
+        log('Try configuring DataWedge to use Intent output with action: com.symbol.datawedge.api.ACTION', true);
+    }
+}
+
+// ============================================
+// MANUAL TESTING
+// ============================================
+document.getElementById('manual-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const val = e.target.value;
+        log('Manual entry: ' + val);
+        processScan(val);
+        e.target.value = '';
     }
 });
 
-async function handleAuth() {
-    const email = document.getElementById('email-input').value.trim();
-    const pass = document.getElementById('pass-input').value;
-    const isReg = document.getElementById('reg-fields').style.display !== 'none';
-    if (!email || !pass) {
-        openModal({ title: 'ERROR', text: 'Please enter email and password.', onConfirm: () => {} });
-        return;
-    }
-    try {
-        if (isReg) {
-            const name = document.getElementById('username-input').value.trim().toUpperCase() || 'OPERATOR';
-            const res = await auth.createUserWithEmailAndPassword(email, pass);
-            await db.ref('users/' + res.user.uid).set({ name });
-        } else {
-            await auth.signInWithEmailAndPassword(email, pass);
-        }
-    } catch (e) {
-        openModal({ title: 'ERROR', text: e.message, onConfirm: () => {} });
-    }
-}
-
-function toggleAuth() {
-    const toRegister = document.getElementById('reg-fields').style.display === 'none';
-    document.getElementById('reg-fields').style.display = toRegister ? 'block' : 'none';
-    document.getElementById('toggle-text').textContent = toRegister ? 'LOGIN' : 'REGISTER';
-    document.getElementById('auth-btn').textContent = toRegister ? 'REGISTER' : 'LOGIN';
-}
-
-function handleSignOut() {
-    auth.signOut().then(() => location.reload());
-}
-
-function wipeAllData() {
-    openModal({
-        title: 'ERASE BOARD',
-        text: 'This will permanently wipe all scores. This cannot be undone.',
-        onConfirm: () => triggerHardReset()
-    });
-}
-
-function promptNameChange() {
-    openModal({
-        title: 'EDIT NAME',
-        text: '',
-        color: 'green',
-        showInput: true,
-        onConfirm: val => {
-            if (!val?.trim()) return;
-            const name = val.trim().toUpperCase();
-            db.ref('users/' + auth.currentUser.uid + '/name').set(name);
-            document.getElementById('op-name').textContent = name;
-            nameMap[auth.currentUser.uid] = name;
-            renderLeaderboard();
-        }
-    });
-}
-
-async function handleForgotPassword() {
-    const email = document.getElementById('email-input').value.trim();
-    if (!email) {
-        openModal({ title: 'REQUIRED', text: 'Enter your email address first.', color: 'green', onConfirm: () => {} });
-        return;
-    }
-    try {
-        await auth.sendPasswordResetEmail(email);
-        openModal({ title: 'EMAIL SENT', text: 'Check your inbox for a reset link.', color: 'green', onConfirm: () => {} });
-    } catch (e) {
-        openModal({ title: 'ERROR', text: e.message, onConfirm: () => {} });
-    }
-}
-
-db.ref('.info/connected').on('value', s => {
-    const online = s.val() === true;
-    document.getElementById('conn-pill').className = 'conn-pill' + (online ? ' online' : '');
-    document.getElementById('conn-text').textContent = online ? 'ONLINE' : 'OFFLINE';
+// ============================================
+// INITIALIZATION
+// ============================================
+window.addEventListener('load', () => {
+    log('Page loaded. Click "Test Keystroke Mode" then try scanning.');
+    log('Or use manual entry field to test the logic.');
+    log('');
+    log('DATAWEDGE CONFIGURATION NEEDED:');
+    log('1. Open DataWedge app');
+    log('2. Create/edit profile for Chrome/Browser');
+    log('3. Enable "Keystroke output"');
+    log('4. Set "Action key" to "Enter" or "Tab"');
+    log('5. Associate with Chrome app');
 });
 </script>
 
 </body>
-</html> 
+</html>
